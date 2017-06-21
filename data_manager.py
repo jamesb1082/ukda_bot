@@ -13,7 +13,7 @@ class Data_manager():
     Initialises a new instance of the class. 
     """
     def __init__(self, data): 
-        self.__kpath= '/home/james/Documents/data/' # MUST BE CHANGED AS HARDWIRED
+        self.__kpath= 'data/' # MUST BE CHANGED AS HARDWIRED
         self.__kpath+=data
         self.__kpath+='/'
         self.__extension = ".txt" 

@@ -1,3 +1,3 @@
 #!/bin/bash 
-rm ../data/database.db
+rm data/database.db
 echo database deleted
