@@ -25,7 +25,7 @@ class Simple_bot:
                 input_adapter="chatterbot.input.TerminalAdapter",
                 silence_performance_warning=True,  
                 output_adapter="chatterbot.output.TerminalAdapter", 
-                database= "../data/database.db", 
+                database= "data/database.db", 
                 )
         self.__chatbot.set_trainer(ListTrainer)        
         self.train()
@@ -37,9 +37,13 @@ class Simple_bot:
     def load_conversations(self, q,k): 
         """
         Loads conversations from the knowledge base using a CSV file which has a 
-        question and an answer. 
+        question and an answer.
+
+        Args:
+            q (Data_manager): This is the datamanager for the questions. 
+            k (Data_manager): This is the dtaamanager for the knowledge base. 
         """
-        path = "/home/james/Documents/data/qa.csv"
+        path = "data/qa.csv"
         conversations = [] 
         csvfile = open(path, 'r') 
         for line in csvfile:
@@ -64,6 +68,8 @@ class Simple_bot:
                 self.__chatbot.train(conversation) 
             except KeyError: 
                 print("error has occurred on line " , i, "in qa.csv")
+               # print(conversation[1])
+
         print("trained on", i, "examples in", round(time()-t0, 3), "s") 
 
     def run(self):
@@ -74,9 +80,12 @@ class Simple_bot:
             try: 
                 self.__bot_input = self.__chatbot.get_response(None) 
             except(KeyboardInterrupt, EOFError, SystemExit): 
-#Load and train the chatbot. 
                 break 
             print("=================================================================")        
+
+
+
+
 reload(sys) 
 sys.setdefaultencoding('utf8')
 
