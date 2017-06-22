@@ -27,13 +27,13 @@ class Simple_bot:
                 output_adapter="chatterbot.output.TerminalAdapter", 
                 database= "../data/database.db", 
                 )
-        self.__chatbot.set_trainer(ListTrainer)
-        
+        self.__chatbot.set_trainer(ListTrainer)        
         self.train()
         print("Chatbot created")
         print("----------------------------------------")
         print("Ask the bot a question to get a response") 
         print("----------------------------------------")
+    
     def load_conversations(self, q,k): 
         """
         Loads conversations from the knowledge base using a CSV file which has a 
