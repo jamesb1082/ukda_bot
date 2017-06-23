@@ -1,3 +1,4 @@
+from __future__ import print_function
 import glob 
 
 
@@ -45,6 +46,9 @@ class Data_manager():
         str: The contents of the file as a string. 
     """
     def get_page(self, name):
-        return self.__knowledge[self.__kpath + name + self.__extension] 
-
+        try:
+            return self.__knowledge[self.__kpath + name + self.__extension] 
+        except: 
+            print("ERROR file not found: ",self.__kpath + name + self.__extension)
+            exit()
 
