@@ -50,5 +50,5 @@ class Data_manager():
             return self.__knowledge[self.__kpath + name + self.__extension] 
         except: 
             print("ERROR file not found: ",self.__kpath + name + self.__extension)
-            exit()
+#            exit()
 

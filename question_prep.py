@@ -50,8 +50,11 @@ chars = {
     '\xe2\x80\x9d' : '', 
     '\xe2\x80\xa6' : '', 
     '\xc2\xb7' : '', 
-    '\xc3\xa9':'e'
-}
+    '\xc3\xa9':'e', 
+    '\xe2\x80\xa2' : ''
+
+        
+    }
 def replace_chars(match):
     """
     Replaces the characters

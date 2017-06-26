@@ -38,3 +38,4 @@ s = sns.barplot(x="names", y="counts", data=data)
 #s.set_xticklabels(rotation=90)
 plt.xticks(rotation=90)
 sns.plt.show()
+
