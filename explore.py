@@ -2,7 +2,7 @@ from __future__ import print_function, division
 import pandas as pd  
 import seaborn as sns 
 import matplotlib.pyplot as plt 
-
+import math 
 
 def get_contents(fname): 
     f1 = open(fname, 'r') 
@@ -26,14 +26,14 @@ def generate_counts(data):
              for i in range(len(names)): 
                  if row == names[i]: 
                      counts[i]+=1
-    return pd.DataFrame({"names":names, "counts":counts}) 
+    return pd.DataFrame({"names":names, "count":counts}) 
 
 
 contents = get_contents("data/qa.csv")
 data = generate_counts(contents) 
 print(data)
 #generate the histogram
-s = sns.barplot(x="names", y="counts", data=data)
+s = sns.barplot(x="names", y="count", data=data)
 
 #s.set_xticklabels(rotation=90)
 plt.xticks(rotation=90)

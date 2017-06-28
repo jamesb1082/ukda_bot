@@ -46,7 +46,8 @@ chars = {
     '\xcc\xb1' : '',          # modifier - under line
     '\xe2\x80\x93' : "-", 
     '\xe2\x80\x99': "'", 
-    '\xe2\x80\x94':''
+    '\xe2\x80\x94':'', 
+    '\xc2\xa3' : ''
 }
 def replace_chars(match):
     """
