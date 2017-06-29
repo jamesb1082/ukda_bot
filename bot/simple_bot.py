@@ -18,7 +18,6 @@ class Simple_bot:
         self.__k_bank = Data_manager('knowledge') 
         
         if testing:
-           print(testing) 
            self.__chatbot = ChatBot("UKDA Bot", 
                     storage_adapter="chatterbot.storage.JsonFileStorageAdapter", 
                     logic_adapters=[
@@ -107,7 +106,7 @@ class Simple_bot:
 
 
 
-    def run(self):
+    def chat(self):
         """
         Runs the chatbot in terminal mode.
         """
