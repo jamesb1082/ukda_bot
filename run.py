@@ -3,6 +3,7 @@ import sys
 
 reload(sys) 
 sys.setdefaultencoding('utf8')
-print("-------------------------------")
-bot1 = Simple_bot()
-bot1.run()
+print("---------------------------------------")
+bot1 = Simple_bot(0.7, True)
+bot1.test()
+#bot1.run()
