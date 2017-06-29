@@ -1,7 +1,10 @@
 from bot.simple_bot import Simple_bot
 import sys 
 import argparse
+import subprocess 
+
 if __name__ =='__main__': 
+    subprocess.call("./rmdatabase.sh")     
     reload(sys) 
     sys.setdefaultencoding('utf8')
     parser = argparse.ArgumentParser("Runs the chatbot in either training or test mode") 
