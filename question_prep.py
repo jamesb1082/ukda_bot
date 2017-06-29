@@ -100,17 +100,18 @@ for row in title:
     row+='.txt' 
     titles.append(row)
 
+inp = raw_input("Are you sure you want to overwrite the question files? (Y/N): ")
+if inp == "y" or inp == "Y":
+    #checks that the files are same length 
+    print("----error checking, titles and contents should be same no-----") 
+    print("titles:", len(titles)) 
+    print("contents:", len(contents))
+    for i in range(0, len(titles)): 
+        nf = open(titles[i], 'w')  
+        nf.write(contents[i])  
+        nf.close() 
 
-#checks that the files are same length 
-print("----error checking, titles and contents should be same no-----") 
-print("titles:", len(titles)) 
-print("contents:", len(contents))
-for i in range(0, len(titles)): 
-    nf = open(titles[i], 'w')  
-    nf.write(contents[i])  
-    nf.close() 
 
-
-content.close() 
-title.close()
-print("Files generated") 
+    content.close() 
+    title.close()
+    print("Files generated") 

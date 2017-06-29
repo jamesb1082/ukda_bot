@@ -15,7 +15,7 @@ def generate_counts(data):
     counts = []
     names=[]
     for row in data:
-        if row not in names and row !='unknown': 
+        if row not in names: 
             names.append(row) 
             counts.append(1) 
         else:
