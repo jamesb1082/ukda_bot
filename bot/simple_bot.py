@@ -86,10 +86,10 @@ class Simple_bot:
 
 
 
-reload(sys) 
-sys.setdefaultencoding('utf8')
+#reload(sys) 
+#sys.setdefaultencoding('utf8')
 
-print("----------------------------------------")
-bot1 = Simple_bot() 
+#print("----------------------------------------")
+#bot1 = Simple_bot() 
 
-bot1.run() 
+#bot1.run() 
