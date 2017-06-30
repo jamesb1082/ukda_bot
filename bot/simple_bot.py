@@ -80,7 +80,7 @@ class Simple_bot:
         conversations = self.__convos[:value]
         i = 0 
         t0 = time() 
-        for c in range(100):
+        for c in range(1):
             for conversation in conversations: 
                 i+=1
                 try:
@@ -94,7 +94,7 @@ class Simple_bot:
          
         value = int(len(self.__convos) * self.__tr) 
         conversations = self.__convos[value:]
-        correct = 0 
+        tp= 0 
         t0 = time()
         i = 0
         for c in conversations:
@@ -110,8 +110,8 @@ class Simple_bot:
                 correct+=1
                 
         print("tested on", len(conversations), "examples in", round(time()-t0, 3), "s") 
-        print("Accuracy: ", round(correct/len(conversations)*100,2), "%")
-        print("Correct value: ", correct) 
+        print("Accuracy: ", round(tp/len(conversations)*100,2), "%")
+        print("True positives: ", tp) 
             
 
 

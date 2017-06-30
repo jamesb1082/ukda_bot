@@ -1,0 +1,54 @@
+from  __future__ import print_function, division
+from tabulate import tabulate 
+from copy import deepcopy
+import glob 
+
+
+def build_empty(headers):
+    return [[0 for x in range(len(headers))] for y in range(len(headers))] 
+
+def get_headers(): 
+    path = "data/knowledge/*.txt"
+    headers = [] 
+    for fname in glob.glob(path): 
+        fname = fname.split("/") 
+        fname = fname[2].split(".") 
+        headers.append(fname[0]) 
+    return headers
+
+def dimension_reduction(matrix): 
+    """
+    Takes a list not a python dictionary. 
+
+    This performs dimension reductionmainly for output. 
+    """
+    new_matrix = [] 
+    for row in matrix:
+        rest= row[:1]
+        if sum(rest) > 0:
+            new_matrix.append(row) 
+    
+    return matrix
+    
+def insert(matrix, row,column, value):
+    r =  matrix[row] 
+    r[column] = value
+    return matrix
+
+def display(matrix, headers):
+    grid = [] 
+    grid = deepcopy(matrix)
+    for i in range(len(headers)):
+        grid[i].insert(0,headers[i]+"|")
+    
+    if len(headers) > 5: 
+        grid = dimension_reduction(grid) 
+
+    print(tabulate(grid,headers)) 
+
+    
+#headers = get_headers() 
+headers = ['a','b','c', 'd', 'e','f']
+m = build_empty(headers)
+display(m,headers)
+m = insert(m, 1,1,1)
