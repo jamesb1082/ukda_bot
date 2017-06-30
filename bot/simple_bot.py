@@ -80,28 +80,38 @@ class Simple_bot:
         conversations = self.__convos[:value]
         i = 0 
         t0 = time() 
-        for conversation in conversations: 
-            i+=1 
-            try:
-                self.__chatbot.train(conversation) 
-            except KeyError: 
-                print("error has occurred on line " , i, "in qa.csv")
-               # print(conversation[1])
+        for c in range(100):
+            for conversation in conversations: 
+                i+=1
+                try:
+                    self.__chatbot.train(conversation) 
+                except KeyError: 
+                    print("error has occurred on line " , i, "in qa.csv")
+                   # print(conversation[1])
         print("trained on", i, "examples in", round(time()-t0, 3), "s") 
 
     def test(self):
+         
         value = int(len(self.__convos) * self.__tr) 
         conversations = self.__convos[value:]
         correct = 0 
-        t0 = time() 
+        t0 = time()
+        i = 0
         for c in conversations:
+            i+=1
             question = c[0] 
-            answer = c[1] 
-            if self.__chatbot.get_response(question) == answer:
-                correct+=1         
+            answer = c[1]
+            guess = str(self.__chatbot.get_response(question))
+            fname = 'data/output/'+str(i)+'.txt'
+            f = open(fname, 'w') 
+            f.write(guess+"/n"+answer) 
+            f.close() 
+            if guess == answer:
+                correct+=1
+                
         print("tested on", len(conversations), "examples in", round(time()-t0, 3), "s") 
         print("Accuracy: ", round(correct/len(conversations)*100,2), "%")
-
+        print("Correct value: ", correct) 
             
 
 

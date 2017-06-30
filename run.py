@@ -15,7 +15,7 @@ if __name__ =='__main__':
     if args.test:
         print("Mode: test") 
         print("Training please wait...") 
-        bot1 = Simple_bot(0.7, True)
+        bot1 = Simple_bot(0.8)
         print("Testing please wait...") 
         bot1.test()
 
