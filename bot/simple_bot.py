@@ -2,10 +2,10 @@ from __future__ import print_function
 from __future__ import division 
 from chatterbot import ChatBot 
 from chatterbot.trainers import ListTrainer 
-from data_manager import Data_manager 
+from data_manager import DataManager 
 import sys
 from time import time 
-
+from sklearn.feature_extraction.text import CountVectorizer
 
 class Simple_bot:
     """
@@ -14,8 +14,8 @@ class Simple_bot:
     """
     def __init__(self, ratio, testing=True): 
         self.__tr = float(ratio) 
-        self.__q_bank = Data_manager('questions') 
-        self.__k_bank = Data_manager('knowledge') 
+        self.__q_bank = DataManager('questions') 
+        self.__k_bank = DataManager('knowledge') 
         
         if testing:
            self.__chatbot = ChatBot("UKDA Bot", 
@@ -90,8 +90,20 @@ class Simple_bot:
                    # print(conversation[1])
         print("trained on", i, "examples in", round(time()-t0, 3), "s") 
 
-    def test(self):
-         
+    def __build_corpus(self, conversations): 
+        corpus = [] 
+        for c in conversations: 
+            corpus.append(c[0]) 
+        return corpus
+    def test(self): 
+        value = int(len(self.__convos) * self.__tr) 
+        conversations = self.__convos[value:]
+        corpus = self.__build_corpus(conversations) 
+        n_features = 2000 
+        vectorizer = CountVectorizer(min_df =1) 
+        X = vectorizer.fit_transform(corpus)
+        print(X)
+    def test2(self):         
         value = int(len(self.__convos) * self.__tr) 
         conversations = self.__convos[value:]
         tp= 0 

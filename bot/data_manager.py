@@ -9,7 +9,7 @@ and question banks.
 Used by the bot to interface with either the knowledge bank or the question bank
 
 """
-class Data_manager():
+class DataManager():
     """
     Initialises a new instance of the class.
 
@@ -23,7 +23,9 @@ class Data_manager():
         self.__extension = ".txt" 
         self.__knowledge = {} 
         self.load_data() 
-
+    
+    def get_knowledge(self): 
+        return self.__knowledge
     """
     Loads the data in the supplied folder into a dictionary. 
     """
