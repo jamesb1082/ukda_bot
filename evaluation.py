@@ -41,7 +41,7 @@ def return_ranked(q, ans, k_corpus):
     idxs = [x for x in range(0,len( k_corpus))] 
     joint_ans = zip(sims, idxs)
     highest = -5
-      
+    ans = 0       
     for row in joint_ans: 
         if row[0] > highest: 
             highest = row[0] 
@@ -69,8 +69,8 @@ def method_a():
     q_corpus = [] 
     k_corpus = load_knowledge(k_bank)   
     real_ans = [] 
-    true_ans = []  
-    
+    true_ans = [] 
+
     for c in corpus: 
         q_corpus.append(c[0])
         real_ans.append(c[1]) 
@@ -81,14 +81,14 @@ def method_a():
     print("real ans:") 
     print(true_ans)
     #set up and create vectorizer 
-    vectorizer = TfidfVectorizer(min_df = 0.0001, stop_words="english")
+    vectorizer = TfidfVectorizer(min_df = 0.01, stop_words="english")
     X = vectorizer.fit_transform(corpus)
     #split the vectors up to questions and answers. 
     questions = X.toarray()[:len(q_corpus)]
     answers = X.toarray()[len(q_corpus):]
     output = [] 
     for q in questions: 
-        output.append(return_ranked(questions[0], answers, k_corpus) )
+        output.append(return_ranked(q, answers, k_corpus) )
     print("predicted ans:") 
     print(output) 
     report(k_corpus, output,true_ans)
@@ -136,4 +136,4 @@ print()
 
 print("METHOD B") 
 print("======================================") 
-method_b() 
+#method_b() 
