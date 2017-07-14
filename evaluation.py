@@ -81,7 +81,7 @@ def method_a():
     print("real ans:") 
     print(true_ans)
     #set up and create vectorizer 
-    vectorizer = TfidfVectorizer(min_df = 0.0001)
+    vectorizer = TfidfVectorizer(min_df = 0.0001, stop_words="english")
     X = vectorizer.fit_transform(corpus)
     #split the vectors up to questions and answers. 
     questions = X.toarray()[:len(q_corpus)]
@@ -96,7 +96,6 @@ def method_a():
 
 
 def method_b():
-
     ans = []
     #load files and build  corpus
     q_bank = DataManager('questions') 
@@ -106,17 +105,22 @@ def method_b():
     q_corpus = [] 
     k_corpus = load_knowledge(k_bank)   
     true = [] 
+   
+    corpus = corpus[1:] 
+
     for c in corpus: 
         q_corpus.append(c[0]) 
         true.append(find_pos(c[1], k_corpus))  
     wmdqa = WMDQA()
     data = k_corpus
-    #corpus = corpus[:5] 
     for row in corpus: 
         q = row[0]  
+#        print(q)
+        data = k_corpus
         top_mems = wmdqa.getTopRelativeMemories(q,data,1)
         data = np.array(data)[top_mems]
-        ans.append(find_pos(data, k_corpus))  
+        ans.append(find_pos(data,k_corpus)) 
+        #ans.append((find_pos(data[0], k_corpus),find_pos(data[1],k_corpus), find_pos(data[2],k_corpus)))
     print("predicted ans: ") 
     print(ans)
     print()
