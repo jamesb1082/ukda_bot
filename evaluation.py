@@ -5,6 +5,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from wmd_python.wmdqa import WMDQA
 from sklearn.metrics import classification_report 
 import numpy as np 
+import json 
 
 def load_corpus(q,k): 
     path = "data/qa.csv" 
@@ -65,16 +66,26 @@ def method_a():
     k_bank = DataManager('knowledge') 
     corpus = load_corpus(q_bank, k_bank)
 
+    pred_dict = {} 
     # split questions and answers into two seperate lists
     q_corpus = [] 
     k_corpus = load_knowledge(k_bank)   
     real_ans = [] 
     true_ans = [] 
-
+    qa_dicts = []  
+    
+    i = 0
     for c in corpus: 
         q_corpus.append(c[0])
-        real_ans.append(c[1]) 
-              
+        real_ans.append(c[1])
+        qa_dicts.append({'id':str(i) , 'answers':{ 'text' : c[1]} })
+        i+=1
+    overall_dict = {'version' : '1.1', 'data':qa_dicts}  
+    
+    with open('data/datafileA.json', 'w')  as outfile:
+            json.dump(overall_dict, outfile) 
+
+
     for ans in real_ans: 
         true_ans.append(find_pos(ans,k_corpus)) 
     corpus = q_corpus+ k_corpus 
@@ -87,12 +98,19 @@ def method_a():
     questions = X.toarray()[:len(q_corpus)]
     answers = X.toarray()[len(q_corpus):]
     output = [] 
-    for q in questions: 
-        output.append(return_ranked(q, answers, k_corpus) )
+    
+    
+    for i in range(0, len(q_corpus)): 
+        pred = return_ranked(questions[i], answers, k_corpus) 
+        output.append(pred) 
+   #     pred_dict[str(i)] = k_corpus[pred].replace('\n', ' ').replace('\r', ' ')   
+        pred_dict[str(i)] = k_corpus[pred]          
+    
     print("predicted ans:") 
     print(output) 
+    with open('data/predictedA.json', 'w') as outfile: 
+        json.dump(pred_dict, outfile) 
     report(k_corpus, output,true_ans)
-#    print(k_corpus[82]) 
 
 
 def method_b():
@@ -105,22 +123,38 @@ def method_b():
     q_corpus = [] 
     k_corpus = load_knowledge(k_bank)   
     true = [] 
-   
+    qa_dicts = [] 
     corpus = corpus[1:] 
-
+    i = 0 
+    pred_dict = {}  
     for c in corpus: 
         q_corpus.append(c[0]) 
-        true.append(find_pos(c[1], k_corpus))  
+        true.append(find_pos(c[1], k_corpus)) 
+        qa_dicts.append({'id':str(i), 'answers':{'text' : c[1]}})
+        i+=1 
     wmdqa = WMDQA()
     data = k_corpus
+    overall_dict = {'version' : '1.1', 'data':qa_dicts}  
+ 
+    with open('data/datafileB.json', 'w')  as outfile:
+        json.dump(overall_dict, outfile) 
+
+    i = 0  
     for row in corpus: 
         q = row[0]  
 #        print(q)
         data = k_corpus
         top_mems = wmdqa.getTopRelativeMemories(q,data,1)
         data = np.array(data)[top_mems]
-        ans.append(find_pos(data,k_corpus)) 
+        ans.append(find_pos(data,k_corpus))
+        print(data) 
+        print("==============================================") 
+        pred_dict[str(i)] = data.tolist()[0]
+        i+=1 
         #ans.append((find_pos(data[0], k_corpus),find_pos(data[1],k_corpus), find_pos(data[2],k_corpus)))
+    with open('data/predictedB.json', 'w') as outfile: 
+        json.dump(pred_dict, outfile) 
+
     print("predicted ans: ") 
     print(ans)
     print()
@@ -136,4 +170,4 @@ print()
 
 print("METHOD B") 
 print("======================================") 
-#method_b() 
+method_b() 
