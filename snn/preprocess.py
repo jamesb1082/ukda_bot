@@ -13,18 +13,18 @@ def get_data():
     texts = get_raw_strings() 
     dmq = DataManager("questions") 
     dma = DataManager("knowledge") 
+    strings = [] 
     for row in links:
         current = []
         for i in range(0,len(texts)):
             if dmq.get_page(row[0]) == texts[i]: 
-                current.append(i) 
+                current.append(i)
         for i in range(0,len(texts)):
             if dma.get_page(row[1]) == texts[i]: 
                 current.append(i)
         index_links.append((current[0], current[1], row[2]))
     
     return index_links, texts
-
 def get_raw_strings(): 
     """
     Loads all the strings in the dataset.

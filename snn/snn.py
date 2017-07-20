@@ -54,7 +54,7 @@ validation_split = 0.2 # what does valiation split mean?
 # The actual text pre-processing can be done in a seperate file  for the
 # dataset that i will soon create.
 print("Update: Preprocessing data") 
-text_indexs, texts = get_data()
+text_index, texts = get_data()
 
 tokenizer = Tokenizer(num_words=max_nb_words,
         filters='#$%()*+,-./:;<=>?@[\\]^_{|}~\t\n', lower=True, split=" ") 
@@ -63,11 +63,25 @@ tokenizer.fit_on_texts(texts)
 sequences = tokenizer.texts_to_sequences(texts)
 word_index = tokenizer.word_index 
 data = pad_sequences(sequences, max_seq_len) 
-labels = [] 
-for li in text_indexs: 
+print(data.shape)
+labels = []
+
+arr = np.zeros((len(text_index), 2, max_seq_len)) 
+
+for li in text_index: 
     labels.append(li[2])
+    # Put the data in the right shape
+    q = sequences[li[0]] 
+    a = sequences[li[1]]
+    
+for i in range(0,len(text_index)): 
+    row = text_index[i]
+    print(data[row[0]].shape)
+    arr[i][0] = data[row[0]]
+    arr[i][1] = data[row[1]] 
 
 
+print(arr.shape)
 # Indexing word vectors 
 print("Update: Indexing word vectors") 
 embed_index = {} 
@@ -78,7 +92,6 @@ for line in f:
     coefs = np.asarray(values[1:], dtype='float32') 
     embed_index[word]=coefs
 f.close()
-
 
 # Generating vector embeddings
 num_words = min(max_nb_words, len(word_index)+1)
@@ -115,10 +128,13 @@ a_nn = base_nn(answer_input)
 distance = Lambda(euclidean_distance,
         output_shape=eucl_dist_output_shape)([q_nn,a_nn])
 
-model1 = Model([question_input, answer_input], distance)
+model = Model([question_input, answer_input], distance)
 
 # compile and fit
 rms = RMSprop() 
-model1.compile(loss=contrastive_loss, optimzer=rms) 
+model.compile(loss=contrastive_loss, optimizer=rms) 
+
+model.fit([arr[:,0], arr[:,1]], labels, batch_size=128, epochs=5) 
+
 
 
