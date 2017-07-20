@@ -91,7 +91,6 @@ for word, i in word_index.items():
     if embedding_vector is not None: 
         embedding_matrix[i] = embedding_vector
 
-sequence_input = Input(shape=(max_seq_len,),dtype='int32')  
 
 question_input = Input(shape=(max_seq_len,))
 answer_input = Input(shape=(max_seq_len,))
@@ -110,16 +109,16 @@ base_nn = create_base_nn(embedding_layer)
 print(type(base_nn)) 
 
 # Using the same input for both? As it seems to be just about dimensions
-q_nn = base_nn(sequence_input)  
-a_nn = base_nn(sequence_input) 
+q_nn = base_nn(question_input)  
+a_nn = base_nn(answer_input) 
 
 distance = Lambda(euclidean_distance,
         output_shape=eucl_dist_output_shape)([q_nn,a_nn])
 
-model = Model([question_input, answer_input], distance)
+model1 = Model([question_input, answer_input], distance)
 
 # compile and fit
 rms = RMSprop() 
-model.compile(loss=contrastive_loss, optimzer=rms) 
+model1.compile(loss=contrastive_loss, optimzer=rms) 
 
 
