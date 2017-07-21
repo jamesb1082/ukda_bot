@@ -20,7 +20,7 @@ def get_data():
     count = 0 
     bar = progressbar.ProgressBar(maxval=len(links),
             widgets=["Loading dataset: ", progressbar.Bar('=','[',']'), ' ', 
-                progressbar.Percentage(), 
+                progressbar.Percentage(), ' ',  
                 progressbar.ETA()])
     bar.start()
     i = 0 

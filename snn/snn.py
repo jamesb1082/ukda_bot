@@ -43,120 +43,126 @@ def eucl_dist_output_shape(shapes):
     shape1, shape2 = shapes
     return (shape1[0],1)
 
+def load_data():
+    """
+    This function loads the dataset and preprocesses so it is in the correct
+    format. 
 
-def compute_accuracy(predictions,labels):
-    print(predictions.shape) 
-    print(labels.shape) 
-    return labels[predictions.ravel() < 0.5].mean() 
-# variables 
-glove_dir = '../../vectors/glove/' 
-max_seq_len = 2500 
-max_nb_words = 20000
-embedding_dim = 100 
-validation_split = 0.2 # what does valiation split mean? 
+    Returns
+    -------
+    train_data: 3D numpy array. 
+    test_data: 3D numpy array. 
+    train_labels: 1D numpy array. 
+    test_labels: 1D numpy array. 
+    word_index: dictionary for words to indexes. 
 
+    """
+    text_index, texts = get_data()
 
-# pre-process the data
-# The actual text pre-processing can be done in a seperate file  for the
-# dataset that i will soon create.
-print("Update: Preprocessing data") 
-text_index, texts = get_data()
+    tokenizer = Tokenizer(num_words=max_nb_words,
+            filters='#$%()*+,-./:;<=>?@[\\]^_{|}~\t\n', lower=True, split=" ") 
 
-tokenizer = Tokenizer(num_words=max_nb_words,
-        filters='#$%()*+,-./:;<=>?@[\\]^_{|}~\t\n', lower=True, split=" ") 
+    tokenizer.fit_on_texts(texts) 
+    sequences = tokenizer.texts_to_sequences(texts)
+    word_index = tokenizer.word_index 
+    data = pad_sequences(sequences, max_seq_len) 
+    labels = []
 
-tokenizer.fit_on_texts(texts) 
-sequences = tokenizer.texts_to_sequences(texts)
-word_index = tokenizer.word_index 
-data = pad_sequences(sequences, max_seq_len) 
-labels = []
+    # build a 3d numpy array to fit input type 
+    arr = np.zeros((len(text_index), 2, max_seq_len)) 
+    for i in range(0,len(text_index)): 
+        row = text_index[i]
+        arr[i][0] = data[row[0]]
+        arr[i][1] = data[row[1]] 
+        temp = text_index[i] 
+        labels.append(temp[2]) 
 
-# build a 3d numpy array to fit input type 
-arr = np.zeros((len(text_index), 2, max_seq_len)) 
-for i in range(0,len(text_index)): 
-    row = text_index[i]
-    arr[i][0] = data[row[0]]
-    arr[i][1] = data[row[1]] 
-    temp = text_index[i] 
-    labels.append(temp[2]) 
+    #split data into training and test sets. 
+    labels = np.array(labels, dtype='int32') 
+    train_val = int(len(arr) * (1-validation_split)) 
+    train_data = arr[:train_val,:]
+    test_data = arr[train_val:, : ] 
+    train_labels = labels[:train_val]
+    test_labels = labels[train_val:] 
+    return train_data,test_data,train_labels,test_labels, word_index 
 
-#split data into training and test sets. 
-labels = np.array(labels, dtype='int32') 
-train_val = int(len(arr) * (1-validation_split)) 
-train_data = arr[:train_val,:]
-test_data = arr[train_val:, : ] 
-train_labels = labels[:train_val]
-test_labels = labels[train_val:] 
-print("train:", len(train_labels))
+def index_vectors(glove_dir): 
+    embed_index = {} 
+    f = open(os.path.join(glove_dir, 'glove.6B.100d.txt')) 
+    for line in f: 
+        values = line.split() 
+        word = values[0] 
+        coefs = np.asarray(values[1:], dtype='float32') 
+        embed_index[word]=coefs
+    f.close()
+    return embed_index
 
+if __name__ == '__main__':  
+    # variables 
+    glove_dir = '../../vectors/glove/' 
+    max_seq_len = 2500 
+    max_nb_words = 20000
+    embedding_dim = 100 
+    validation_split = 0.2 # what does valiation split mean? 
 
-# Indexing word vectors 
-print("Update: Indexing word vectors") 
-embed_index = {} 
-f = open(os.path.join(glove_dir, 'glove.6B.100d.txt')) 
-for line in f: 
-    values = line.split() 
-    word = values[0] 
-    coefs = np.asarray(values[1:], dtype='float32') 
-    embed_index[word]=coefs
-f.close()
+    print("Update: Preprocessing data") 
+    train_data, test_data, train_labels, test_labels, word_index= load_data() 
 
-# Generating vector embeddings
-num_words = min(max_nb_words, len(word_index)+1)
-embedding_matrix = np.zeros((num_words, embedding_dim)) 
-print("Update: Generating vector embeddings")
-for word, i in word_index.items(): 
-    if i >=max_nb_words:
-        continue 
-    embedding_vector=embed_index.get(word)
-    if embedding_vector is not None: 
-        embedding_matrix[i] = embedding_vector
+    print("Update: Indexing word vectors") 
+    embed_index = index_vectors(glove_dir)  
 
+    # Generating vector embeddings
+    num_words = min(max_nb_words, len(word_index)+1)
+    embedding_matrix = np.zeros((num_words, embedding_dim)) 
 
-question_input = Input(shape=(max_seq_len,))
-answer_input = Input(shape=(max_seq_len,))
+    print("Update: Generating vector embeddings")
+    for word, i in word_index.items(): 
+        if i >=max_nb_words:
+            continue 
+        embedding_vector=embed_index.get(word)
+        if embedding_vector is not None: 
+            embedding_matrix[i] = embedding_vector
 
-# Create embedding layer
+    # Creating the inputs
+    question_input = Input(shape=(max_seq_len,))
+    answer_input = Input(shape=(max_seq_len,))
 
-print("Update: Creating Neural Network") 
-embedding_layer = Embedding(num_words, 
-        embedding_dim,
-        weights=[embedding_matrix], 
-        input_length=max_seq_len,
-        trainable=False)
+    # Create embedding layer
+    print("Update: Creating Neural Network") 
+    embedding_layer = Embedding(num_words, 
+            embedding_dim,
+            weights=[embedding_matrix], 
+            input_length=max_seq_len,
+            trainable=False)
 
-base_nn = create_base_nn(embedding_layer)
+    base_nn = create_base_nn(embedding_layer)
+    # Using the same input for both? As it seems to be just about dimensions
+    q_nn = base_nn(question_input)  
+    a_nn = base_nn(answer_input) 
 
-print(type(base_nn)) 
+    distance = Lambda(euclidean_distance,
+            output_shape=eucl_dist_output_shape)([q_nn,a_nn])
 
-# Using the same input for both? As it seems to be just about dimensions
-q_nn = base_nn(question_input)  
-a_nn = base_nn(answer_input) 
+    model = Model([question_input, answer_input], distance)
 
-distance = Lambda(euclidean_distance,
-        output_shape=eucl_dist_output_shape)([q_nn,a_nn])
+    # compile and fit
+    rms = RMSprop() 
+    model.compile(loss=contrastive_loss, optimizer=rms, metrics=['accuracy']) 
+    model.fit([train_data[:,0], train_data[:,1]], train_labels, batch_size=128, epochs=20) 
 
-model = Model([question_input, answer_input], distance)
+    # Predict and evaluate.
+    pred = model.predict([train_data[:,0], train_data[:,0]]) 
+    print("Prediction shape: ", pred.shape)
+    train_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=2) 
+    pred = model.predict([test_data[:,0], test_data[:,0]]) 
+    test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=2) 
+    
+    print() 
+    print("=======Results===========") 
+    print("Training set tests:")
+    for i in range(len(train_out)): 
+        print(model.metrics_names[i], ': ', round(train_out[i],5)) 
 
-# compile and fit
-rms = RMSprop() 
-model.compile(loss=contrastive_loss, optimizer=rms, metrics=['accuracy']) 
-
-model.fit([train_data[:,0], train_data[:,1]], train_labels, batch_size=128, epochs=5) 
-
-# Predict and evaluate.
-pred = model.predict([train_data[:,0], train_data[:,0]]) 
-print("Prediction shape: ", pred.shape)
-train_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=2) 
-pred = model.predict([test_data[:,0], test_data[:,0]]) 
-test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=2) 
-
-print() 
-print("=======Results===========") 
-print("Training set tests:")
-for i in range(len(train_out)): 
-    print(model.metrics_names[i], ': ', round(train_out[i],5)) 
-
-print("Test set tests:") 
-for i in range(len(test_out)): 
-    print(model.metrics_names[i], ': ', round(test_out[i],5)) 
+    print("Test set tests:") 
+    for i in range(len(test_out)): 
+        print(model.metrics_names[i], ': ', round(test_out[i],5)) 
