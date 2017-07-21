@@ -37,11 +37,17 @@ def contrastive_loss(y_true, y_pred):
     return K.mean(y_true * K.square(y_pred) + (1-y_true) * K.square(
         K.maximum(margin - y_pred,0)))
 
+
+
 def eucl_dist_output_shape(shapes): 
     shape1, shape2 = shapes
     return (shape1[0],1)
 
 
+def compute_accuracy(predictions,labels):
+    print(predictions.shape) 
+    print(labels.shape) 
+    return labels[predictions.ravel() < 0.5].mean() 
 # variables 
 glove_dir = '../../vectors/glove/' 
 max_seq_len = 2500 
@@ -63,25 +69,27 @@ tokenizer.fit_on_texts(texts)
 sequences = tokenizer.texts_to_sequences(texts)
 word_index = tokenizer.word_index 
 data = pad_sequences(sequences, max_seq_len) 
-print(data.shape)
 labels = []
 
+# build a 3d numpy array to fit input type 
 arr = np.zeros((len(text_index), 2, max_seq_len)) 
-
-for li in text_index: 
-    labels.append(li[2])
-    # Put the data in the right shape
-    q = sequences[li[0]] 
-    a = sequences[li[1]]
-    
 for i in range(0,len(text_index)): 
     row = text_index[i]
-    print(data[row[0]].shape)
     arr[i][0] = data[row[0]]
     arr[i][1] = data[row[1]] 
+    temp = text_index[i] 
+    labels.append(temp[2]) 
+
+#split data into training and test sets. 
+labels = np.array(labels, dtype='int32') 
+train_val = int(len(arr) * (1-validation_split)) 
+train_data = arr[:train_val,:]
+test_data = arr[train_val:, : ] 
+train_labels = labels[:train_val]
+test_labels = labels[train_val:] 
+print("train:", len(train_labels))
 
 
-print(arr.shape)
 # Indexing word vectors 
 print("Update: Indexing word vectors") 
 embed_index = {} 
@@ -132,9 +140,23 @@ model = Model([question_input, answer_input], distance)
 
 # compile and fit
 rms = RMSprop() 
-model.compile(loss=contrastive_loss, optimizer=rms) 
+model.compile(loss=contrastive_loss, optimizer=rms, metrics=['accuracy']) 
 
-model.fit([arr[:,0], arr[:,1]], labels, batch_size=128, epochs=5) 
+model.fit([train_data[:,0], train_data[:,1]], train_labels, batch_size=128, epochs=5) 
 
+# Predict and evaluate.
+pred = model.predict([train_data[:,0], train_data[:,0]]) 
+print("Prediction shape: ", pred.shape)
+train_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=2) 
+pred = model.predict([test_data[:,0], test_data[:,0]]) 
+test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=2) 
 
+print() 
+print("=======Results===========") 
+print("Training set tests:")
+for i in range(len(train_out)): 
+    print(model.metrics_names[i], ': ', round(train_out[i],5)) 
 
+print("Test set tests:") 
+for i in range(len(test_out)): 
+    print(model.metrics_names[i], ': ', round(test_out[i],5)) 

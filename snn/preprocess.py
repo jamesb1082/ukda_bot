@@ -1,5 +1,7 @@
 from data_manager import DataManager
-from random import randint 
+from random import randint, shuffle 
+import progressbar 
+import sys 
 def get_data(): 
     """
     Gets data from the new dataset. 
@@ -14,6 +16,14 @@ def get_data():
     dmq = DataManager("questions") 
     dma = DataManager("knowledge") 
     strings = [] 
+    
+    count = 0 
+    bar = progressbar.ProgressBar(maxval=len(links),
+            widgets=["Loading dataset: ", progressbar.Bar('=','[',']'), ' ', 
+                progressbar.Percentage(), 
+                progressbar.ETA()])
+    bar.start()
+    i = 0 
     for row in links:
         current = []
         for i in range(0,len(texts)):
@@ -23,7 +33,9 @@ def get_data():
             if dma.get_page(row[1]) == texts[i]: 
                 current.append(i)
         index_links.append((current[0], current[1], row[2]))
-    
+        count+=1
+        bar.update(count)
+    sys.stdout.write("\n") 
     return index_links, texts
 def get_raw_strings(): 
     """
@@ -56,6 +68,7 @@ def get_file_links():
 def create_dataset(repeat=3):
     """
     Creates a random dataset in the format: question, answer,correct
+    Order is also random. 
     """
     dataset = [] 
     correct_ans = [] 
@@ -82,8 +95,10 @@ def create_dataset(repeat=3):
 
             dataset.append([ans[0],row[1], 0 ])  
     print(len(dataset)) 
-    print(len(correct_ans)) 
+    print(len(correct_ans))
+    shuffle(dataset) 
     f = open(new_dataset, 'w') 
+    
     for row in dataset: 
         entry = row[0] + ',' + row[1] + ',' + str(row[2])+"\n" 
         f.write(entry)

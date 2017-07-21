@@ -1,5 +1,0 @@
-Update: Preprocessing data
-Update: Indexing word vectors
-Update: Generating vector embeddings
-Update: Creating Neural Network
-<class 'keras.models.Sequential'>
