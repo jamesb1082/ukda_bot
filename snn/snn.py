@@ -46,6 +46,8 @@ def create_base_nn_updated(embedding):
     seq.add(Dense(256))
     seq.add(Dropout(0.2)) 
     seq.add(Activation('relu')) 
+    seq.add(Dropout(0.2)) 
+    seq.add(Activation('sigmoid'))
     return seq    
 
 
@@ -177,7 +179,7 @@ if __name__ == '__main__':
     # compile and fit
     rms = RMSprop() 
     model.compile(loss=contrastive_loss, optimizer=rms, metrics=['accuracy']) 
-    model.fit([train_data[:,0], train_data[:,1]], train_labels, batch_size=256, epochs=60) 
+    model.fit([train_data[:,0], train_data[:,1]], train_labels, batch_size=128, epochs=60) 
 
     # Predict and evaluate.
     pred = model.predict([train_data[:,0], train_data[:,0]]) 
