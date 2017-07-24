@@ -37,7 +37,7 @@ def create_base_nn_updated(embedding):
     Same as the above function, however it is deeper.  
     """
     filters = 250 
-    kernel_size = 3
+    kernel_size = 5
 
     seq = Sequential() 
     seq.add(embedding)
@@ -48,7 +48,8 @@ def create_base_nn_updated(embedding):
     seq.add(Dropout(0.2)) 
     seq.add(Activation('relu')) 
     seq.add(Dropout(0.2)) 
-    seq.add(Activation('sigmoid'))
+    seq.add(Dense(1))
+    #seq.add(Activation('sigmoid'))
     return seq    
 
 
@@ -129,6 +130,12 @@ def index_vectors(glove_dir):
     f.close()
     return embed_index
 
+def compute_acc(pred, labels): 
+    """
+    Borrowed from mnist siamese script! 
+    """
+    return labels[pred.ravel() < 0.5].mean() 
+
 if __name__ == '__main__':  
     # variables 
     glove_dir = '../../vectors/glove/' 
@@ -165,7 +172,7 @@ if __name__ == '__main__':
             embedding_dim,
             weights=[embedding_matrix], 
             input_length=max_seq_len,
-            trainable=False)
+            trainable=True)
 
     base_nn = create_base_nn_updated(embedding_layer)
     # Using the same input for both? As it seems to be just about dimensions
@@ -180,20 +187,21 @@ if __name__ == '__main__':
     # compile and fit
     rms = RMSprop() 
     model.compile(loss=contrastive_loss, optimizer=rms, metrics=['accuracy']) 
-    model.fit([train_data[:,0], train_data[:,1]], train_labels, batch_size=64, epochs=10) 
+    model.fit([train_data[:,0], train_data[:,1]], train_labels, batch_size=64, epochs=40) 
 
     # Predict and evaluate.
     pred = model.predict([train_data[:,0], train_data[:,0]]) 
-    print(pred.shape) 
-    
     print("Prediction shape: ", pred.shape)
     train_out = model.evaluate([train_data[:,0], train_data[:,1]] , train_labels, batch_size=32) 
     pred2 = model.predict([test_data[:,0], test_data[:,0]]) 
     test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=32) 
+    
+    print("Training classification report")  
+    print(classification_report(train_labels, map(round,pred))) 
     print() 
 
-    print(classification_report(train_labels, pred)) 
-    
+    print("Testing classification report") 
+    print(classification_report(test_labels, map(round,pred2))) 
     print("=======Results===========") 
     print("Training set tests:")
     for i in range(len(train_out)): 

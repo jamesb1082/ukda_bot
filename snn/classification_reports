@@ -1,0 +1,18 @@
+Training classification report
+             precision    recall  f1-score   support
+
+          0       0.51      1.00      0.68       418
+          1       0.00      0.00      0.00       402
+
+avg / total       0.26      0.51      0.34       820
+
+
+Testing classification report
+             precision    recall  f1-score   support
+
+          0       0.46      1.00      0.63        95
+          1       0.00      0.00      0.00       111
+
+avg / total       0.21      0.46      0.29       206
+
+
