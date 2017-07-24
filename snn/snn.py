@@ -2,6 +2,7 @@ from __future__ import print_function
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.layers import Embedding, Dense, Dropout, Input, Lambda
+from keras.layers import Conv1D, GlobalMaxPooling1D, Activation
 from keras.models import Sequential, Model
 import os 
 import sys 
@@ -9,9 +10,17 @@ import numpy as np
 from preprocess import get_data
 from keras import backend as K 
 from keras.optimizers import RMSprop 
-
+from keras.utils import plot_model
 
 def create_base_nn(embedding):
+    """
+    Adapted from the mnist siamese script. Returns a sequential model, with the
+    first layer being a frozen embedding layer. 
+
+    Return:
+    -------
+    A sequential model. 
+    """
     seq = Sequential() 
     seq.add(embedding)
     seq.add(Dense(128,activation='relu'))
@@ -19,6 +28,24 @@ def create_base_nn(embedding):
     seq.add(Dense(128,activation='relu'))
     seq.add(Dropout(0.1)) 
     seq.add(Dense(128,activation='relu')) 
+    return seq    
+
+
+def create_base_nn_updated(embedding): 
+    """
+    Same as the above function, however it is deeper.  
+    """
+    filters = 250 
+    kernel_size = 3
+
+    seq = Sequential() 
+    seq.add(embedding)
+    seq.add(Dropout(0.2))
+    seq.add(Conv1D(filters, kernel_size,padding='valid',activation='relu', strides=1))
+    seq.add(GlobalMaxPooling1D())
+    seq.add(Dense(256))
+    seq.add(Dropout(0.2)) 
+    seq.add(Activation('relu')) 
     return seq    
 
 
@@ -84,6 +111,8 @@ def load_data():
     test_data = arr[train_val:, : ] 
     train_labels = labels[:train_val]
     test_labels = labels[train_val:] 
+    print(train_data.shape) 
+    print(test_data.shape) 
     return train_data,test_data,train_labels,test_labels, word_index 
 
 def index_vectors(glove_dir): 
@@ -133,9 +162,9 @@ if __name__ == '__main__':
             embedding_dim,
             weights=[embedding_matrix], 
             input_length=max_seq_len,
-            trainable=False)
+            trainable=True)
 
-    base_nn = create_base_nn(embedding_layer)
+    base_nn = create_base_nn_updated(embedding_layer)
     # Using the same input for both? As it seems to be just about dimensions
     q_nn = base_nn(question_input)  
     a_nn = base_nn(answer_input) 
@@ -148,21 +177,22 @@ if __name__ == '__main__':
     # compile and fit
     rms = RMSprop() 
     model.compile(loss=contrastive_loss, optimizer=rms, metrics=['accuracy']) 
-    model.fit([train_data[:,0], train_data[:,1]], train_labels, batch_size=128, epochs=20) 
+    model.fit([train_data[:,0], train_data[:,1]], train_labels, batch_size=256, epochs=60) 
 
     # Predict and evaluate.
     pred = model.predict([train_data[:,0], train_data[:,0]]) 
     print("Prediction shape: ", pred.shape)
-    train_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=2) 
+    train_out = model.evaluate([train_data[:,0], train_data[:,1]] , train_labels, batch_size=32) 
     pred = model.predict([test_data[:,0], test_data[:,0]]) 
-    test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=2) 
+    test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=32) 
     
     print() 
     print("=======Results===========") 
     print("Training set tests:")
     for i in range(len(train_out)): 
         print(model.metrics_names[i], ': ', round(train_out[i],5)) 
-
     print("Test set tests:") 
     for i in range(len(test_out)): 
-        print(model.metrics_names[i], ': ', round(test_out[i],5)) 
+        print(model.metrics_names[i], ': ', round(test_out[i],5))
+    plot_model(model,to_file='model.png') 
+            
