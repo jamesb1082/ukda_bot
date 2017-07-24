@@ -11,6 +11,7 @@ from preprocess import get_data
 from keras import backend as K 
 from keras.optimizers import RMSprop 
 from keras.utils import plot_model
+from sklearn.metrics import classification_report 
 
 def create_base_nn(embedding):
     """
@@ -164,7 +165,7 @@ if __name__ == '__main__':
             embedding_dim,
             weights=[embedding_matrix], 
             input_length=max_seq_len,
-            trainable=True)
+            trainable=False)
 
     base_nn = create_base_nn_updated(embedding_layer)
     # Using the same input for both? As it seems to be just about dimensions
@@ -179,16 +180,20 @@ if __name__ == '__main__':
     # compile and fit
     rms = RMSprop() 
     model.compile(loss=contrastive_loss, optimizer=rms, metrics=['accuracy']) 
-    model.fit([train_data[:,0], train_data[:,1]], train_labels, batch_size=128, epochs=60) 
+    model.fit([train_data[:,0], train_data[:,1]], train_labels, batch_size=64, epochs=10) 
 
     # Predict and evaluate.
     pred = model.predict([train_data[:,0], train_data[:,0]]) 
+    print(pred.shape) 
+    
     print("Prediction shape: ", pred.shape)
     train_out = model.evaluate([train_data[:,0], train_data[:,1]] , train_labels, batch_size=32) 
-    pred = model.predict([test_data[:,0], test_data[:,0]]) 
+    pred2 = model.predict([test_data[:,0], test_data[:,0]]) 
     test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=32) 
-    
     print() 
+
+    print(classification_report(train_labels, pred)) 
+    
     print("=======Results===========") 
     print("Training set tests:")
     for i in range(len(train_out)): 

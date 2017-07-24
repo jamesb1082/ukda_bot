@@ -32,7 +32,7 @@ def get_data():
         for i in range(0,len(texts)):
             if dma.get_page(row[1]) == texts[i]: 
                 current.append(i)
-        index_links.append((current[0], current[1], row[2]))
+        index_links.append((current[0], current[1], int(row[2])))
         count+=1
         bar.update(count)
     sys.stdout.write("\n") 
