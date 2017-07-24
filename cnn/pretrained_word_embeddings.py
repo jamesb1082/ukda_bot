@@ -24,6 +24,12 @@ from keras.layers import Conv1D, MaxPooling1D, Embedding
 from keras.models import Model
 
 
+def compute_accuracy(predictions, labels): 
+    """
+    Borrowed from mnsist script 
+    """
+    return labels[predictions.ravel() < 0.5].mean
+
 BASE_DIR = '../../vectors'
 GLOVE_DIR = BASE_DIR + '/glove/'
 TEXT_DATA_DIR = BASE_DIR + '/20_newsgroup/'
@@ -107,14 +113,15 @@ print('Preparing embedding matrix.')
 # prepare embedding matrix
 num_words = min(MAX_NB_WORDS, len(word_index))
 embedding_matrix = np.zeros((num_words, EMBEDDING_DIM))
+print(embedding_matrix.shape)
 for word, i in word_index.items():
+    #    print("word: ", word, "    i: ", i) 
     if i >= MAX_NB_WORDS:
         continue
     embedding_vector = embeddings_index.get(word)
     if embedding_vector is not None:
         # words not found in embedding index will be all-zeros.
         embedding_matrix[i] = embedding_vector
-
 # load pre-trained word embeddings into an Embedding layer
 # note that we set trainable = False so as to keep the embeddings fixed
 embedding_layer = Embedding(num_words,
@@ -147,3 +154,7 @@ model.fit(x_train, y_train,
           batch_size=128,
           epochs=10,
           validation_data=(x_val, y_val))
+
+pred = model.predict(x_val) 
+acc = compute_accuracy(pred,y_val)
+print("Accuracy: %s" % acc) 

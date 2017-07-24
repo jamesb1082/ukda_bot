@@ -75,6 +75,9 @@ def create_base_network(input_dim):
 def compute_accuracy(predictions, labels):
     '''Compute classification accuracy with a fixed threshold on distances.
     '''
+    print("HELLO") 
+    print(labels.shape) 
+    print(predictions) 
     return labels[predictions.ravel() < 0.5].mean()
 
 
@@ -87,7 +90,7 @@ x_test = x_test.astype('float32')
 x_train /= 255
 x_test /= 255
 input_dim = 784
-epochs = 20
+epochs = 5
 
 # create training+test positive and negative pairs
 digit_indices = [np.where(y_train == i)[0] for i in range(10)]
@@ -101,7 +104,6 @@ base_network = create_base_network(input_dim)
 
 input_a = Input(shape=(input_dim,))
 input_b = Input(shape=(input_dim,))
-
 # because we re-use the same instance `base_network`,
 # the weights of the network
 # will be shared across the two branches
@@ -116,6 +118,7 @@ model = Model([input_a, input_b], distance)
 # train
 rms = RMSprop()
 model.compile(loss=contrastive_loss, optimizer=rms)
+
 model.fit([tr_pairs[:, 0], tr_pairs[:, 1]], tr_y,
           batch_size=128,
           epochs=epochs,
@@ -126,6 +129,8 @@ pred = model.predict([tr_pairs[:, 0], tr_pairs[:, 1]])
 tr_acc = compute_accuracy(pred, tr_y)
 pred = model.predict([te_pairs[:, 0], te_pairs[:, 1]])
 te_acc = compute_accuracy(pred, te_y)
+
+print(pred.shape) 
 
 print('* Accuracy on training set: %0.2f%%' % (100 * tr_acc))
 print('* Accuracy on test set: %0.2f%%' % (100 * te_acc))

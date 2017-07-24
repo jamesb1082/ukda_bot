@@ -66,7 +66,7 @@ def contrastive_loss(y_true, y_pred):
     Contrastive loss from mnist sieme script 
     """
     margin = 1
-    return K.mean(y_true * K.square(y_pred) + (1-y_true) * K.square(
+    return K.mean((1-y_true) * K.square(y_pred) + y_true * K.square(
         K.maximum(margin - y_pred,0)))
 
 
@@ -90,7 +90,7 @@ def load_data():
 
     """
     text_index, texts = get_data()
-    max_nb_words = 20000
+    max_nb_words = 200000
 
     tokenizer = Tokenizer(num_words=max_nb_words,
             filters='#$%()*+,-./:;<=>?@[\\]^_{|}~\t\n', lower=True, split=" ") 
@@ -121,8 +121,12 @@ def load_data():
     test_data = arr[train_val:, : ] 
     train_labels = labels[:train_val]
     test_labels = labels[train_val:] 
-    print(train_data.shape) 
+    print(train_data[:,0].shape) 
     print(test_data.shape) 
+    temp  =[test_data[:,0], test_data[:,0]]
+
+    for i in train_data[:,0]:
+        print(i) 
     return train_data,test_data,train_labels,test_labels, word_index 
 
 def index_vectors(glove_dir): 
@@ -146,7 +150,7 @@ if __name__ == '__main__':
     # variables 
     glove_dir = '../../vectors/glove/' 
     max_seq_len = 2300 
-    max_nb_words = 20000
+    max_nb_words = 200000
     embedding_dim = 100 
     validation_split = 0.2 # what does valiation split mean? 
 
@@ -194,7 +198,7 @@ if __name__ == '__main__':
     rms = RMSprop() 
     model.compile(loss=contrastive_loss, optimizer=rms, metrics=['accuracy']) 
     history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-            batch_size=32, epochs=100, validation_split=0.2) 
+            batch_size=32, epochs=1000, validation_split=0.2) 
 
     # Predict and evaluate.
     pred = model.predict([train_data[:,0], train_data[:,0]]) 
@@ -211,6 +215,7 @@ if __name__ == '__main__':
     tmp_vals = [] 
     
     for value in pred:
+        print(value) 
         tmp_vals.append(float(value[0])) 
     print("Are all outputs the same: ", len(set(tmp_vals))== 1) 
     print("=======================================================================") 
@@ -230,9 +235,7 @@ if __name__ == '__main__':
     
     # plot some graphs 
     dt  = history.history['acc'] 
-    data = pandas.DataFrame({"acc":dt}) 
-    
-    print(data) 
+    data = pandas.DataFrame({"acc":dt})  
     ax = sns.tsplot(data=data["acc"] )
     ax.set(xlabel="epoch", ylabel="Accuracy") 
     sns.plt.show() 

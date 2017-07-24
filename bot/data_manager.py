@@ -26,10 +26,10 @@ class DataManager():
     
     def get_knowledge(self): 
         return self.__knowledge
-    """
-    Loads the data in the supplied folder into a dictionary. 
-    """
-    def load_data(self): 
+   def load_data(self): 
+        """
+        Loads the data in the supplied folder into a dictionary. 
+        """ 
         path = self.__kpath + "*" + self.__extension 
         for fname in glob.glob(path): 
             f1 = open(fname, 'r') 
@@ -38,16 +38,16 @@ class DataManager():
 
             f1.close() 
              
-    """
-    Gets the content of a file given a specific file name.
-
-    Args:
-        name (str): The name of the file one wants to retrieve.
-
-    Returns: 
-        str: The contents of the file as a string. 
-    """
     def get_page(self, name):
+        """
+        Gets the content of a file given a specific file name.
+
+        Args:
+        name (str): The name of the file one wants to retrieve.
+        Returns: 
+        str: The contents of the file as a string. 
+        """
+
         try:
             return self.__knowledge[self.__kpath + name + self.__extension] 
         except: 
