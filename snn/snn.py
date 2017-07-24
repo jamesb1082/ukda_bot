@@ -56,14 +56,18 @@ def create_base_nn_updated(embedding):
 
 def euclidean_distance(vects): 
     """
-    Borrow from mnist siemese script. 
+    Borrow from mnist siamese script. 
     """
     x,y = vects
     return K.sqrt(K.maximum(K.sum(K.square(x- y), axis=1, keepdims=True), K.epsilon()))
 
 def contrastive_loss(y_true, y_pred): 
     """
-    Contrastive loss from mnist sieme script 
+    Contrastive loss from mnist siamese script however it has been modified. 
+    
+    Found a github issue stating that (1-y_true) and y_true should be swapped round. 
+    originally they were the the other way. 
+
     """
     margin = 1
     return K.mean((1-y_true) * K.square(y_pred) + y_true * K.square(
@@ -146,6 +150,11 @@ def compute_acc(pred, labels):
     """
     return labels[pred.ravel() < 0.5].mean() 
 
+
+
+def evaluate_distance(): 
+
+
 if __name__ == '__main__':  
     # variables 
     glove_dir = '../../vectors/glove/' 
@@ -182,7 +191,7 @@ if __name__ == '__main__':
             embedding_dim,
             weights=[embedding_matrix], 
             input_length=max_seq_len,
-            trainable=True)
+            trainable=False)
 
     base_nn = create_base_nn_updated(embedding_layer)
     # Using the same input for both? As it seems to be just about dimensions
