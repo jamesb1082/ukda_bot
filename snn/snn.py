@@ -9,7 +9,6 @@ import sys
 import numpy as np 
 from preprocess import get_data
 from keras import backend as K 
-from keras.optimizers import RMSprop 
 from keras.utils import plot_model
 from sklearn.metrics import classification_report 
 import seaborn as sns 
@@ -129,8 +128,6 @@ def load_data():
     print(test_data.shape) 
     temp  =[test_data[:,0], test_data[:,0]]
 
-    for i in train_data[:,0]:
-        print(i) 
     return train_data,test_data,train_labels,test_labels, word_index 
 
 def index_vectors(glove_dir): 
@@ -153,7 +150,7 @@ def compute_acc(pred, labels):
 
 
 def evaluate_distance(): 
-
+    i = 0 
 
 if __name__ == '__main__':  
     # variables 
@@ -204,8 +201,7 @@ if __name__ == '__main__':
     model = Model([question_input, answer_input], distance)
 
     # compile and fit
-    rms = RMSprop() 
-    model.compile(loss=contrastive_loss, optimizer=rms, metrics=['accuracy']) 
+    model.compile(loss=contrastive_loss, optimizer="Adam", metrics=['accuracy']) 
     history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
             batch_size=32, epochs=1000, validation_split=0.2) 
 
