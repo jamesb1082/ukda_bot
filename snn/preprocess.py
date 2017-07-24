@@ -26,6 +26,7 @@ def get_data():
     i = 0 
     for row in links:
         current = []
+        
         for i in range(0,len(texts)):
             if dmq.get_page(row[0]) == texts[i]: 
                 current.append(i)
@@ -103,4 +104,3 @@ def create_dataset(repeat=3):
         entry = row[0] + ',' + row[1] + ',' + str(row[2])+"\n" 
         f.write(entry)
     f.close()
-

@@ -12,7 +12,8 @@ from keras import backend as K
 from keras.optimizers import RMSprop 
 from keras.utils import plot_model
 from sklearn.metrics import classification_report 
-
+import seaborn as sns 
+import pandas 
 def create_base_nn(embedding):
     """
     Adapted from the mnist siamese script. Returns a sequential model, with the
@@ -41,15 +42,15 @@ def create_base_nn_updated(embedding):
 
     seq = Sequential() 
     seq.add(embedding)
-    seq.add(Dropout(0.2))
+    seq.add(Dropout(0.1))
     seq.add(Conv1D(filters, kernel_size,padding='valid',activation='relu', strides=1))
     seq.add(GlobalMaxPooling1D())
     seq.add(Dense(256))
-    seq.add(Dropout(0.2)) 
+    seq.add(Dropout(0.1)) 
     seq.add(Activation('relu')) 
-    seq.add(Dropout(0.2)) 
+    seq.add(Dropout(0.1)) 
     seq.add(Dense(1))
-    #seq.add(Activation('sigmoid'))
+    seq.add(Activation('sigmoid'))
     return seq    
 
 
@@ -89,16 +90,21 @@ def load_data():
 
     """
     text_index, texts = get_data()
+    max_nb_words = 20000
 
     tokenizer = Tokenizer(num_words=max_nb_words,
             filters='#$%()*+,-./:;<=>?@[\\]^_{|}~\t\n', lower=True, split=" ") 
 
     tokenizer.fit_on_texts(texts) 
     sequences = tokenizer.texts_to_sequences(texts)
+    value =0
+    for i in sequences: 
+        if len(i) > value: 
+            value = len(i) 
+    print(value) 
     word_index = tokenizer.word_index 
-    data = pad_sequences(sequences, max_seq_len) 
+    data = pad_sequences(sequences, 2300) 
     labels = []
-
     # build a 3d numpy array to fit input type 
     arr = np.zeros((len(text_index), 2, max_seq_len)) 
     for i in range(0,len(text_index)): 
@@ -139,7 +145,7 @@ def compute_acc(pred, labels):
 if __name__ == '__main__':  
     # variables 
     glove_dir = '../../vectors/glove/' 
-    max_seq_len = 2500 
+    max_seq_len = 2300 
     max_nb_words = 20000
     embedding_dim = 100 
     validation_split = 0.2 # what does valiation split mean? 
@@ -187,7 +193,8 @@ if __name__ == '__main__':
     # compile and fit
     rms = RMSprop() 
     model.compile(loss=contrastive_loss, optimizer=rms, metrics=['accuracy']) 
-    model.fit([train_data[:,0], train_data[:,1]], train_labels, batch_size=64, epochs=40) 
+    history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
+            batch_size=32, epochs=100, validation_split=0.2) 
 
     # Predict and evaluate.
     pred = model.predict([train_data[:,0], train_data[:,0]]) 
@@ -196,6 +203,17 @@ if __name__ == '__main__':
     pred2 = model.predict([test_data[:,0], test_data[:,0]]) 
     test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=32) 
     
+    print() 
+
+    print("=======================================================================") 
+    
+    # Check to see if all outputs are the same or not 
+    tmp_vals = [] 
+    
+    for value in pred:
+        tmp_vals.append(float(value[0])) 
+    print("Are all outputs the same: ", len(set(tmp_vals))== 1) 
+    print("=======================================================================") 
     print("Training classification report")  
     print(classification_report(train_labels, map(round,pred))) 
     print() 
@@ -209,5 +227,12 @@ if __name__ == '__main__':
     print("Test set tests:") 
     for i in range(len(test_out)): 
         print(model.metrics_names[i], ': ', round(test_out[i],5))
-    plot_model(model,to_file='model.png') 
-            
+    
+    # plot some graphs 
+    dt  = history.history['acc'] 
+    data = pandas.DataFrame({"acc":dt}) 
+    
+    print(data) 
+    ax = sns.tsplot(data=data["acc"] )
+    ax.set(xlabel="epoch", ylabel="Accuracy") 
+    sns.plt.show() 
