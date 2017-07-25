@@ -26,7 +26,6 @@ def get_data():
     i = 0 
     for row in links:
         current = []
-        
         for i in range(0,len(texts)):
             if dmq.get_page(row[0]) == texts[i]: 
                 current.append(i)
@@ -56,9 +55,8 @@ def get_raw_strings():
     return texts
 
 
-def get_file_links(): 
+def get_file_links(data_dir = '../data/new_qa.csv'):  
     data = [] 
-    data_dir = '../data/new_qa.csv'
     f = open(data_dir, 'r') 
     for line in f: 
         data.append(line.strip("\n").split(","))
