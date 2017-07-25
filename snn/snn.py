@@ -216,7 +216,10 @@ if __name__ == '__main__':
 
     print("Update: Preprocessing data") 
     train_data, test_data, train_labels, test_labels, word_index, sequences= load_data() 
-    
+    # TRAINING ON ALL THE DATA. ATTEMPTING TO OVERFIT 
+    train_data = np.concatenate((train_data,test_data), axis=0) 
+    train_labels = np.concatenate((train_labels, test_labels), axis=0) 
+
 
     if args.load == None:  
         print("Update: Indexing word vectors") 
@@ -259,7 +262,7 @@ if __name__ == '__main__':
         # compile and fit
         model.compile(loss=contrastive_loss, optimizer="Adam", metrics=['accuracy']) 
         history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-                batch_size=32, epochs=1000, validation_split=0.2) 
+                batch_size=32, epochs=100, validation_split=0.2) 
     
        # plot some graphs 
         dt  = history.history['acc'] 
