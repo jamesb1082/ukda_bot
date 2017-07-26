@@ -1,0 +1,23 @@
+=======Results===========
+Training set tests:
+loss :  0.0
+acc :  1.0
+Test set tests:
+loss :  0.0
+acc :  1.0
+Update: Evaluating
+276
+
+
+[array([[ 0.00031623]], dtype=float32), array([[ 0.99945694]], dtype=float32), array([[ 0.00053909]], dtype=float32), array([[ 0.99943501]], dtype=float32)]
+[343, 285, 336, 294]
+
+
+
+[array([[ 0.00042761]], dtype=float32), array([[ 0.99957556]], dtype=float32), array([[ 0.00065772]], dtype=float32), array([[ 0.99955362]], dtype=float32)]
+[343, 285, 336, 294]
+
+
+('label: ', 343, '    prediction: ', 343)
+('label: ', 336, '    prediction: ', 343)
+
