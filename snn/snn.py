@@ -211,7 +211,7 @@ if __name__ == '__main__':
         # compile and fit
         model.compile(loss=contrastive_loss, optimizer="Adam", metrics=['accuracy']) 
         history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-                batch_size=32, epochs=1000, validation_split=0) 
+                batch_size=32, epochs=100, validation_split=0) 
     
        # plot some graphs 
         dt  = history.history['acc'] 

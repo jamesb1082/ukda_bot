@@ -37,6 +37,9 @@ def generate_predictions(questions, corr_links, relevant_ans, model,ans_dict):
         pred.append( ans_dict[ans[1]]) 
     return pred
 
+
+
+
 def get_answers(question,answers,model,correct_ans,converter): 
     """
     get the answers with the closest distance
@@ -50,17 +53,27 @@ def get_answers(question,answers,model,correct_ans,converter):
         #score_rating.append(dummy_distance(converter[i], correct_ans))
         top_val = 100
         top_pos = -1
-        
-        for i in range(0,len(score_rating)): 
-            if score_rating[i] < top_val: 
-                top_val = score_rating[i]
-                top_pos = i 
-        return (top_val, top_pos) 
+     
+    for i in range(0,len(score_rating)): 
+        if score_rating[i] < top_val: 
+            top_val = score_rating[i]
+            top_pos = i 
+    
+    a = [converter[x] for x in range(len(answers))] 
+    print(score_rating) 
+
+    print(a) 
+    return (top_val, top_pos) 
+
+
+
 
 def dummy_distance2(answer,index): 
     if answer==index:
         return 0
     return 1
+
+
 
 def evaluation(sequences, model): 
     links = get_file_links("../data/debug_dataset.csv")
@@ -83,7 +96,9 @@ def evaluation(sequences, model):
             answer_indexes[len(relevant_ans)-1] =li[1] 
 
     prediction = generate_predictions(questions,corr_in_links, 
-            relevant_ans, model, answer_indexes) 
+            relevant_ans, model, answer_indexes)     
     
-    print(classification_report(labels,prediction))  
+    for i in range(0, len(prediction)): 
+            print("label: ", labels[i], "    prediction: ", prediction[i]) 
+    #print(classification_report(labels,prediction))  
 
