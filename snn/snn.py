@@ -15,7 +15,7 @@ import seaborn as sns
 import pandas
 import argparse 
 from data_manager import DataManager
-
+from evaluate import evaluation
 def create_base_nn(embedding):
     """
     Adapted from the mnist siamese script. Returns a sequential model, with the
@@ -150,89 +150,6 @@ def compute_acc(pred, labels):
     return labels[pred.ravel() < 0.5].mean() 
 
 
-def get_answers(question, answers, model, correct_ans): 
-    """
-    Gets the answers with the closest distance
-    """
-    score_rating = [] # corresponds to the score given by predict between question and answer.
-    question = question.reshape(1,2300)
-    for i in range(len(answers)):
-        answer=answers[i].reshape(1,2300) 
-        score_rating.append(model.predict([question,answer]) ) 
-        #score_rating.append(dummy_distance2(i, correct_ans))
-    
-    top_val = 10000
-    top_pos = 10000
-    for i in range(0,len(score_rating) ): 
-        if score_rating[i] <  top_val: 
-            top_val = score_rating[i] 
-            top_pos = i
-    print(top_val, top_pos) 
-    return (top_val, top_pos)  
-
-def dummy_distance2(answer,  index): 
-    if answer == (index-276): # to compenseate for it being the answers not the whole dataset 
-        print(answer) 
-        return 0
-    return 1
-
-def evaluation(sequences): 
-    """
-    evaluates the neural network as a distance function 
-    """ 
-    dma = DataManager("knowledge") 
-    dmq = DataManager("questions") 
-    links = get_file_links("../data/debug_dataset.csv") # index of the question and answer in texts list 
-    index_links = [] 
-    texts = get_raw_strings() 
-    for row in links : 
-        current = [] 
-        for i in range(0, len(texts)): 
-            if dmq.get_page(row[0]) == texts[i]: 
-                current.append(i) 
-        for i in range(0, len(texts)): 
-            if dma.get_page(row[1]) == texts[i]: 
-                current.append(i) 
-        index_links.append(current) 
-
-    answers = sequences[276:] #we know that the number of questions is 276. This is hardcoded.  
-    questions = sequences[:276] 
-    # build labels 
-    labels = [] 
-    for row in index_links: 
-        labels.append(row[1])
-    
-    
-    # step 1 generate all possible answers. 
-    # step 2 generate new list with answers in dataset
-    # step 3 dictionary which maps new indexes to old ones. 
-
-    relevant_ans = [] 
-    answer_indexes = {} 
-    
-    for li in index_links:
-        relevant_ans.append(sequences[li[1]]) 
-        answer_indexes[len(relevant_ans)-1] = li[1] 
-
-    prediction = []  
-    
-    for li in index_links: 
-        #    print(li[1]) 
-        ans = get_answers(questions[li[0]], relevant_ans, model, li[1]) 
-        prediction.append(answer_indexes[ans[1]]) 
-        print("==================")
-    count = 0 
-    print(classification_report(labels, prediction) )  
-    for i in range(0, len(prediction)): 
-        if labels[i] != prediction[i]:
-            count+=1    
-        #print(labels[i] , " = ", prediction[i]) 
-    print("erros in dummy dist: ", count) 
-
-
-
-
-
 
 if __name__ == '__main__':  
     parser = argparse.ArgumentParser("Siamese neural network for question answering")
@@ -294,7 +211,7 @@ if __name__ == '__main__':
         # compile and fit
         model.compile(loss=contrastive_loss, optimizer="Adam", metrics=['accuracy']) 
         history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-                batch_size=32, epochs=20, validation_split=0) 
+                batch_size=32, epochs=1000, validation_split=0) 
     
        # plot some graphs 
         dt  = history.history['acc'] 
@@ -329,4 +246,4 @@ if __name__ == '__main__':
     for i in range(len(test_out)): 
         print(model.metrics_names[i], ': ', round(test_out[i],5))
     print("Update: Evaluating")  
-    evaluation(sequences)  
+    evaluation(sequences, model)  
