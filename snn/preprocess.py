@@ -11,7 +11,8 @@ def get_data():
         a list of strings
     """
     index_links = [] # do list of tuples (q,a,l) where q and a is index in rawstrings
-    links = get_file_links() 
+    links = get_file_links("../data/debug_dataset.csv" )  
+ 
     texts = get_raw_strings() 
     dmq = DataManager("questions") 
     dma = DataManager("knowledge") 
@@ -38,6 +39,7 @@ def get_data():
         bar.update(count)
     sys.stdout.write("\n") 
     return index_links, texts
+
 def get_raw_strings(): 
     """
     Loads all the strings in the dataset.

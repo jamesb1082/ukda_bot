@@ -182,7 +182,7 @@ def evaluation(sequences):
     """ 
     dma = DataManager("knowledge") 
     dmq = DataManager("questions") 
-    links = get_file_links("../data/qa.csv") # index of the question and answer in texts list 
+    links = get_file_links("../data/debug_dataset.csv") # index of the question and answer in texts list 
     index_links = [] 
     texts = get_raw_strings() 
     for row in links : 
@@ -201,11 +201,25 @@ def evaluation(sequences):
     labels = [] 
     for row in index_links: 
         labels.append(row[1])
+    
+    
+    # step 1 generate all possible answers. 
+    # step 2 generate new list with answers in dataset
+    # step 3 dictionary which maps new indexes to old ones. 
+
+    relevant_ans = [] 
+    answer_indexes = {} 
+    
+    for li in index_links:
+        relevant_ans.append(sequences[li[1]]) 
+        answer_indexes[len(relevant_ans)-1] = li[1] 
+
     prediction = []  
+    
     for li in index_links: 
         #    print(li[1]) 
-        ans = get_answers(questions[li[0]], answers, model, li[1]) 
-        prediction.append(276+ans[1]) 
+        ans = get_answers(questions[li[0]], relevant_ans, model, li[1]) 
+        prediction.append(answer_indexes[ans[1]]) 
         print("==================")
     count = 0 
     print(classification_report(labels, prediction) )  
@@ -214,6 +228,11 @@ def evaluation(sequences):
             count+=1    
         #print(labels[i] , " = ", prediction[i]) 
     print("erros in dummy dist: ", count) 
+
+
+
+
+
 
 if __name__ == '__main__':  
     parser = argparse.ArgumentParser("Siamese neural network for question answering")
@@ -275,7 +294,7 @@ if __name__ == '__main__':
         # compile and fit
         model.compile(loss=contrastive_loss, optimizer="Adam", metrics=['accuracy']) 
         history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-                batch_size=32, epochs=1000, validation_split=0) 
+                batch_size=32, epochs=20, validation_split=0) 
     
        # plot some graphs 
         dt  = history.history['acc'] 
