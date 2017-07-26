@@ -107,7 +107,6 @@ def load_data():
     for i in sequences: 
         if len(i) > value: 
             value = len(i) 
-    print(value) 
     word_index = tokenizer.word_index 
     data = pad_sequences(sequences, 2300) 
     labels = []
@@ -151,22 +150,31 @@ def compute_acc(pred, labels):
     return labels[pred.ravel() < 0.5].mean() 
 
 
-def get_answers(question, answers, model, num_ans=1): 
+def get_answers(question, answers, model, correct_ans): 
     """
     Gets the answers with the closest distance
     """
     score_rating = [] # corresponds to the score given by predict between question and answer.
     question = question.reshape(1,2300)
-    for answer in answers:  
-        answer = answer.reshape(1,2300)  
+    for i in range(len(answers)):
+        answer=answers[i].reshape(1,2300) 
         score_rating.append(model.predict([question,answer]) ) 
+        #score_rating.append(dummy_distance2(i, correct_ans))
+    
     top_val = 10000
     top_pos = 10000
     for i in range(0,len(score_rating) ): 
         if score_rating[i] <  top_val: 
             top_val = score_rating[i] 
             top_pos = i
+    print(top_val, top_pos) 
     return (top_val, top_pos)  
+
+def dummy_distance2(answer,  index): 
+    if answer == (index-276): # to compenseate for it being the answers not the whole dataset 
+        print(answer) 
+        return 0
+    return 1
 
 def evaluation(sequences): 
     """
@@ -174,7 +182,7 @@ def evaluation(sequences):
     """ 
     dma = DataManager("knowledge") 
     dmq = DataManager("questions") 
-    links = get_file_links("../data/qa.csv") # index of thte question and answer in the texts list. 
+    links = get_file_links("../data/qa.csv") # index of the question and answer in texts list 
     index_links = [] 
     texts = get_raw_strings() 
     for row in links : 
@@ -187,19 +195,25 @@ def evaluation(sequences):
                 current.append(i) 
         index_links.append(current) 
 
-    answers = sequences[171:] #we know that the number of questions is 171. This is hardcoded.  
-    questions = sequences[:171] 
+    answers = sequences[276:] #we know that the number of questions is 276. This is hardcoded.  
+    questions = sequences[:276] 
     # build labels 
     labels = [] 
     for row in index_links: 
         labels.append(row[1])
     prediction = []  
-    for question in questions: 
-        ans = get_answers(question, answers, model) 
-        prediction.append((172 + ans[1]))  
+    for li in index_links: 
+        #    print(li[1]) 
+        ans = get_answers(questions[li[0]], answers, model, li[1]) 
+        prediction.append(276+ans[1]) 
+        print("==================")
+    count = 0 
     print(classification_report(labels, prediction) )  
-    for i in range(0, len(labels)): 
-        print(labels[i] , " = ", prediction[i]) 
+    for i in range(0, len(prediction)): 
+        if labels[i] != prediction[i]:
+            count+=1    
+        #print(labels[i] , " = ", prediction[i]) 
+    print("erros in dummy dist: ", count) 
 
 if __name__ == '__main__':  
     parser = argparse.ArgumentParser("Siamese neural network for question answering")
@@ -219,7 +233,6 @@ if __name__ == '__main__':
     # TRAINING ON ALL THE DATA. ATTEMPTING TO OVERFIT 
     train_data = np.concatenate((train_data,test_data), axis=0) 
     train_labels = np.concatenate((train_labels, test_labels), axis=0) 
-
 
     if args.load == None:  
         print("Update: Indexing word vectors") 
@@ -262,7 +275,7 @@ if __name__ == '__main__':
         # compile and fit
         model.compile(loss=contrastive_loss, optimizer="Adam", metrics=['accuracy']) 
         history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-                batch_size=32, epochs=100, validation_split=0.2) 
+                batch_size=32, epochs=100, validation_split=0) 
     
        # plot some graphs 
         dt  = history.history['acc'] 
@@ -271,15 +284,12 @@ if __name__ == '__main__':
         ax.set(xlabel="epoch", ylabel="Accuracy") 
         sns.plt.show()      
     
-    
-    
-    
-    
+        
     else: # loads a model from saved file 
         print("Loading Model") 
         model = load_model(args.load, custom_objects={'contrastive_loss':contrastive_loss}) 
         history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-                batch_size=32, epochs=100, validation_split=0.2) 
+                batch_size=32, epochs=0, validation_split=0.2) 
     
  
     # Predict and evaluate.
@@ -289,8 +299,7 @@ if __name__ == '__main__':
     print() 
 
     
-    # Check to see if all outputs are the same or not 
-    
+    # Check to see if all outputs are the same or not  
     print() 
 
     print("=======Results===========") 

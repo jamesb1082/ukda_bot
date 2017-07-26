@@ -29,6 +29,7 @@ def get_data():
         for i in range(0,len(texts)):
             if dmq.get_page(row[0]) == texts[i]: 
                 current.append(i)
+                break
         for i in range(0,len(texts)):
             if dma.get_page(row[1]) == texts[i]: 
                 current.append(i)
@@ -49,7 +50,7 @@ def get_raw_strings():
 
     for key, item in dmq.get_knowledge().items():
         texts.append(item)
-    
+    print(len(texts)) 
     for key, item in dma.get_knowledge().items(): 
         texts.append(item) 
     return texts
@@ -102,3 +103,12 @@ def create_dataset(repeat=3):
         entry = row[0] + ',' + row[1] + ',' + str(row[2])+"\n" 
         f.write(entry)
     f.close()
+
+
+a,b = get_data() 
+i = 0 
+for row in a: 
+    if row[0] > 276:
+        i+=1 
+print(i) 
+#print(a) 
