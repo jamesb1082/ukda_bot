@@ -1,3 +1,4 @@
+from __future__ import print_function
 from data_manager import DataManager
 from preprocess import get_file_links, get_raw_strings
 from sklearn.metrics import classification_report
@@ -20,7 +21,7 @@ def generate_index(links, texts):
             if dma.get_page(row[1]) == texts[i]: 
                 current.append(i) 
         index_links.append(current)
-        if int(row[2]) == 0: #assuming 0 is the label for correct answers. 
+        if int(row[2]) == 0 and current not in correct_index_links: # 0 is label for correct 
             correct_index_links.append(current) 
 
     return index_links, correct_index_links
@@ -32,7 +33,8 @@ def generate_predictions(questions, corr_links, relevant_ans, model,ans_dict):
     """
     
     pred = [] 
-    for row in corr_links: 
+    for row in corr_links:
+        print("question: ", row[0]) 
         ans = get_answers(questions[row[0]], relevant_ans, model, row[1],ans_dict)
         pred.append( ans_dict[ans[1]]) 
     return pred
@@ -66,20 +68,23 @@ def get_answers(question,answers,model,correct_ans,converter):
     return (top_val, top_pos) 
 
 
-
-
-def dummy_distance2(answer,index): 
+def dummy_distance(answer,index): 
     if answer==index:
         return 0
     return 1
 
 
-
 def evaluation(sequences, model): 
+    """
+    Evaluation function which performs evaluates the neural network acting as a distance
+    fuction. 
+    """
+    print()
+    print("=======================EVALUATION=====================") 
     links = get_file_links("../data/debug_dataset.csv")
     texts = get_raw_strings() 
     index_links, corr_in_links = generate_index(links, texts)  
-    
+    print(index_links)  
     answers = sequences[276:] 
     questions = sequences[:276]
     
@@ -94,11 +99,11 @@ def evaluation(sequences, model):
         if any((sequences[li[1]]==x).all() for x in relevant_ans) == False: 
             relevant_ans.append(sequences[li[1]])
             answer_indexes[len(relevant_ans)-1] =li[1] 
-
     prediction = generate_predictions(questions,corr_in_links, 
             relevant_ans, model, answer_indexes)     
     
     for i in range(0, len(prediction)): 
             print("label: ", labels[i], "    prediction: ", prediction[i]) 
-    #print(classification_report(labels,prediction))  
-
+    print()
+    print()
+    print(classification_report(labels,prediction))  

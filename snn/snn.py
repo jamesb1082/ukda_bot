@@ -4,35 +4,14 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.layers import Embedding, Dense, Dropout, Input, Lambda
 from keras.layers import Conv1D, GlobalMaxPooling1D, Activation
 from keras.models import Sequential, Model, load_model
-import os 
-import sys 
-import numpy as np 
+import os
+import numpy as np
 from preprocess import get_data, get_file_links, get_raw_strings
-from keras import backend as K 
-from keras.utils import plot_model
-from sklearn.metrics import classification_report 
+from keras import backend as K
 import seaborn as sns 
 import pandas
-import argparse 
-from data_manager import DataManager
+import argparse
 from evaluate import evaluation
-def create_base_nn(embedding):
-    """
-    Adapted from the mnist siamese script. Returns a sequential model, with the
-    first layer being a frozen embedding layer. 
-
-    Return:
-    -------
-    A sequential model. 
-    """
-    seq = Sequential() 
-    seq.add(embedding)
-    seq.add(Dense(128,activation='relu'))
-    seq.add(Dropout(0.1)) 
-    seq.add(Dense(128,activation='relu'))
-    seq.add(Dropout(0.1)) 
-    seq.add(Dense(128,activation='relu')) 
-    return seq    
 
 
 def create_base_nn_updated(embedding): 
@@ -44,13 +23,13 @@ def create_base_nn_updated(embedding):
 
     seq = Sequential() 
     seq.add(embedding)
-    seq.add(Dropout(0.1))
+    seq.add(Dropout(0.2))
     seq.add(Conv1D(filters, kernel_size,padding='valid',activation='relu', strides=1))
     seq.add(GlobalMaxPooling1D())
     seq.add(Dense(256))
-    seq.add(Dropout(0.1)) 
+    seq.add(Dropout(0.2))
     seq.add(Activation('relu')) 
-    seq.add(Dropout(0.1)) 
+    seq.add(Dropout(0.2))
     seq.add(Dense(1))
     seq.add(Activation('sigmoid'))
     return seq    
@@ -63,7 +42,8 @@ def euclidean_distance(vects):
     x,y = vects
     return K.sqrt(K.maximum(K.sum(K.square(x- y), axis=1, keepdims=True), K.epsilon()))
 
-def contrastive_loss(y_true, y_pred): 
+
+def contrastive_loss(y_true, y_pred):
     """
     Contrastive loss from mnist siamese script however it has been modified. 
     
@@ -72,14 +52,14 @@ def contrastive_loss(y_true, y_pred):
 
     """
     margin = 1
-    return K.mean((1-y_true) * K.square(y_pred) + y_true * K.square(
+    return K.mean((1-y_true) * K.square(y_pred) + (y_true) * K.square(
         K.maximum(margin - y_pred,0)))
 
 
-
-def eucl_dist_output_shape(shapes): 
+def eucl_dist_output_shape(shapes):
     shape1, shape2 = shapes
     return (shape1[0],1)
+
 
 def load_data():
     """
@@ -126,13 +106,16 @@ def load_data():
     test_data = arr[train_val:, : ] 
     train_labels = labels[:train_val]
     test_labels = labels[train_val:] 
-    print(train_data[:,0].shape) 
-    print(test_data.shape) 
-    temp  =[test_data[:,0], test_data[:,0]]
-
+    print("train: ", train_data[:,0].shape) 
+    #print(test_data.shape) 
+    temp  =[test_data[:,0], test_data[:,0]]    
     return train_data,test_data,train_labels,test_labels, word_index, data 
 
-def index_vectors(glove_dir): 
+
+def index_vectors(glove_dir):
+    """
+    indexes the glvoe vectors as a dictionary
+    """
     embed_index = {} 
     f = open(os.path.join(glove_dir, 'glove.6B.100d.txt')) 
     for line in f: 
@@ -143,12 +126,66 @@ def index_vectors(glove_dir):
     f.close()
     return embed_index
 
-def compute_acc(pred, labels): 
+
+def compute_acc(pred, labels):
     """
     Borrowed from mnist siamese script! 
     """
     return labels[pred.ravel() < 0.5].mean() 
 
+
+def create_embedding(word_index, glove_dir, max_nb_words):
+    """
+    Generates the embedding layer and returns it 
+    """
+    embed_index = index_vectors(glove_dir)  
+    # Generating vector embeddings
+    num_words = min(max_nb_words, len(word_index)+1)
+    embedding_matrix = np.zeros((num_words, embedding_dim)) 
+
+    print("Update: Generating vector embeddings")
+    for word, i in word_index.items(): 
+        if i >=max_nb_words:
+            continue 
+        embedding_vector=embed_index.get(word)
+        if embedding_vector is not None: 
+            embedding_matrix[i] = embedding_vector
+
+       # Create embedding layer
+    print("Update: Creating Neural Network") 
+    embedding_layer = Embedding(num_words, 
+            embedding_dim,
+            weights=[embedding_matrix], 
+            input_length=max_seq_len,
+            trainable=False)
+    return embedding_layer
+
+
+def display_results(train_out, test_out, model):
+    """
+    Displays the training and testing results from model.evaluate
+    """
+    print()  
+    # Check to see if all outputs are the same or not  
+    print() 
+    print("=======Results===========") 
+    print("Training set tests:")
+    for i in range(len(train_out)): 
+        print(model.metrics_names[i], ': ', round(train_out[i],5)) 
+    print("Test set tests:") 
+    for i in range(len(test_out)): 
+        print(model.metrics_names[i], ': ', round(test_out[i],5))
+
+
+def training_graph(history): 
+    """
+    Displays a graph showing acc vs epochs
+    """
+    dt  = history.history['acc'] 
+    data = pandas.DataFrame({"acc":dt})      
+    ax = sns.tsplot(data=data["acc"] )
+    ax.set(xlabel="epoch", ylabel="Accuracy") 
+    sns.plt.show() 
 
 
 if __name__ == '__main__':  
@@ -156,7 +193,9 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--load", help="Load a neural network", 
             action="store", type=str) 
     args = parser.parse_args() 
+    # ==========================================================================
     # variables 
+    # ==========================================================================
     glove_dir = '../../vectors/glove/' 
     max_seq_len = 2300 
     max_nb_words = 200000
@@ -164,42 +203,29 @@ if __name__ == '__main__':
     validation_split = 0.2 # what does valiation split mean? 
     save_file = 'saved_models/snn.h5'
 
+    # ==========================================================================
+    # Pre-process the data
+    # ==========================================================================
     print("Update: Preprocessing data") 
     train_data, test_data, train_labels, test_labels, word_index, sequences= load_data() 
     # TRAINING ON ALL THE DATA. ATTEMPTING TO OVERFIT 
     train_data = np.concatenate((train_data,test_data), axis=0) 
     train_labels = np.concatenate((train_labels, test_labels), axis=0) 
-
+    print("TRAIN:", train_data.shape) 
+    
+    # ========================================================================== 
+    # Create a new neural network from scratch. 
+    # ==========================================================================
     if args.load == None:  
         print("Update: Indexing word vectors") 
-        embed_index = index_vectors(glove_dir)  
-
-        # Generating vector embeddings
-        num_words = min(max_nb_words, len(word_index)+1)
-        embedding_matrix = np.zeros((num_words, embedding_dim)) 
-
-        print("Update: Generating vector embeddings")
-        for word, i in word_index.items(): 
-            if i >=max_nb_words:
-                continue 
-            embedding_vector=embed_index.get(word)
-            if embedding_vector is not None: 
-                embedding_matrix[i] = embedding_vector
-
-        # Creating the inputs
+        base_nn = create_base_nn_updated(create_embedding(word_index,glove_dir, 
+                   max_nb_words))
+        # Using the same input for both? As it seems to be just about dimensions
+        # Creating the inputs # what does this line actually do? check mnist script 
         question_input = Input(shape=(max_seq_len,))
         answer_input = Input(shape=(max_seq_len,))
 
-        # Create embedding layer
-        print("Update: Creating Neural Network") 
-        embedding_layer = Embedding(num_words, 
-                embedding_dim,
-                weights=[embedding_matrix], 
-                input_length=max_seq_len,
-                trainable=False)
 
-        base_nn = create_base_nn_updated(embedding_layer)
-        # Using the same input for both? As it seems to be just about dimensions
         q_nn = base_nn(question_input)  
         a_nn = base_nn(answer_input) 
 
@@ -211,39 +237,23 @@ if __name__ == '__main__':
         # compile and fit
         model.compile(loss=contrastive_loss, optimizer="Adam", metrics=['accuracy']) 
         history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-                batch_size=32, epochs=100, validation_split=0) 
-    
-       # plot some graphs 
-        dt  = history.history['acc'] 
-        data = pandas.DataFrame({"acc":dt})  
-        ax = sns.tsplot(data=data["acc"] )
-        ax.set(xlabel="epoch", ylabel="Accuracy") 
-        sns.plt.show()      
-    
+                batch_size=32, epochs=100, validation_split=0)   
         
-    else: # loads a model from saved file 
+        training_graph(history) 
+        model.save(save_file)  
+
+    # ==========================================================================
+    # Load a neural network 
+    # ==========================================================================
+    else: 
         print("Loading Model") 
         model = load_model(args.load, custom_objects={'contrastive_loss':contrastive_loss}) 
-        history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-                batch_size=32, epochs=0, validation_split=0.2) 
-    
- 
-    # Predict and evaluate.
+        history = model.fit([train_data[:,0], train_data[:,1]], train_labels,
+                batch_size=32, epochs=0, validation_split=0.2)     
+    # ==========================================================================
+    # Evaluate and display results
+    # ==========================================================================
     train_out = model.evaluate([train_data[:,0], train_data[:,1]] , train_labels, batch_size=32) 
-    test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=32) 
-    model.save(save_file)  
-    print() 
-
-    
-    # Check to see if all outputs are the same or not  
-    print() 
-
-    print("=======Results===========") 
-    print("Training set tests:")
-    for i in range(len(train_out)): 
-        print(model.metrics_names[i], ': ', round(train_out[i],5)) 
-    print("Test set tests:") 
-    for i in range(len(test_out)): 
-        print(model.metrics_names[i], ': ', round(test_out[i],5))
-    print("Update: Evaluating")  
+    test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=32)  
+    display_results(train_out, test_out, model)
     evaluation(sequences, model)  
