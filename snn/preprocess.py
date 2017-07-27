@@ -11,8 +11,8 @@ def get_data():
         a list of strings
     """
     index_links = [] # do list of tuples (q,a,l) where q and a is index in rawstrings
-    links = get_file_links("../data/debug_dataset.csv" )  
- 
+    #links = get_file_links("../data/debug_dataset.csv" )  
+    links = get_file_links() 
     texts = get_raw_strings() 
     dmq = DataManager("questions") 
     dma = DataManager("knowledge") 
@@ -66,7 +66,41 @@ def get_file_links(data_dir = '../data/new_qa.csv'):
     return data 
 
 
-def create_dataset(repeat=3):
+def create_dataset(number = 2):
+    """
+    Creates a new dataset which maps 1 right answer and every other answer as wrong.
+    Notdone for all possible answers, but all the other correct answers. 
+    ask spyros if this should be changed. 
+    """
+    dataset = [] 
+    correct_ans = [] 
+    qa_path = "../data/qa.csv"
+    new_dataset = "../data/new_qa.csv" 
+     
+    #read in the right answer questions.
+    qa_file = open(qa_path,'r') 
+    for i in range(0,number):  
+        entry= qa_file.readline().strip("\n").split(",") 
+        correct_ans.append(entry) 
+    qa_file.close() 
+     
+    for ans in correct_ans: 
+        # Adds the right answer
+        dataset.append([ans[0],ans[1],0])
+        # add all the wrong answers.
+        for other_ans in correct_ans: 
+            if other_ans[1] != ans[1]: 
+                dataset.append([ans[0], other_ans[1],1])
+    shuffle(dataset) 
+    f = open(new_dataset, 'w') 
+    
+    for row in dataset: 
+        entry = row[0] + ',' + row[1] + ',' + str(row[2])+"\n" 
+        f.write(entry)
+    f.close()
+    print("Dataset created: Note length is not 171^2 as correct ans only included once.")      
+
+def create_dataset_old(repeat=3):
     """
     Creates a random dataset in the format: question, answer,correct
     Order is also random. 
@@ -104,4 +138,4 @@ def create_dataset(repeat=3):
         entry = row[0] + ',' + row[1] + ',' + str(row[2])+"\n" 
         f.write(entry)
     f.close()
-
+#create_dataset(3) 

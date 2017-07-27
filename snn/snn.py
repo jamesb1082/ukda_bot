@@ -235,10 +235,10 @@ if __name__ == '__main__':
         # compile and fit
         model.compile(loss=contrastive_loss, optimizer="Adam", metrics=['accuracy']) 
         history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-                batch_size=32, epochs=1000, validation_split=0)    
-        training_graph(history) 
-        model.save(save_file)  
-
+                batch_size=32, epochs=2000, validation_split=0)    
+        model.save(save_file) 
+        
+        training_graph(history)       
     # ==========================================================================
     # Load a neural network 
     # ==========================================================================
