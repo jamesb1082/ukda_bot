@@ -34,7 +34,7 @@ def generate_predictions(questions, corr_links, relevant_ans, model,ans_dict):
     
     pred = [] 
     for row in corr_links:
-        print("question: ", row[0]) 
+        print("question: ", row[0], "   answer: ", row[1]) 
         ans = get_answers(questions[row[0]], relevant_ans, model, row[1],ans_dict)
         pred.append( ans_dict[ans[1]]) 
     return pred
@@ -62,9 +62,9 @@ def get_answers(question,answers,model,correct_ans,converter):
             top_pos = i 
     
     a = [converter[x] for x in range(len(answers))] 
-    print(score_rating) 
-
-    print(a) 
+    
+    values = zip(a,score_rating)
+    print(values) 
     return (top_val, top_pos) 
 
 
@@ -84,7 +84,8 @@ def evaluation(sequences, model):
     links = get_file_links("../data/debug_dataset.csv")
     texts = get_raw_strings() 
     index_links, corr_in_links = generate_index(links, texts)  
-    print(index_links)  
+    #print(index_links)  
+    print("corr_in_links: ", corr_in_links) 
     answers = sequences[276:] 
     questions = sequences[:276]
     
@@ -99,11 +100,14 @@ def evaluation(sequences, model):
         if any((sequences[li[1]]==x).all() for x in relevant_ans) == False: 
             relevant_ans.append(sequences[li[1]])
             answer_indexes[len(relevant_ans)-1] =li[1] 
+    
     prediction = generate_predictions(questions,corr_in_links, 
             relevant_ans, model, answer_indexes)     
     
     for i in range(0, len(prediction)): 
             print("label: ", labels[i], "    prediction: ", prediction[i]) 
     print()
-    print()
-    print(classification_report(labels,prediction))  
+    
+    #print(values) print()
+    #print(len(answers))
+    #print(classification_report(labels,prediction))  

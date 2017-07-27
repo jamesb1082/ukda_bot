@@ -52,7 +52,6 @@ def get_raw_strings():
 
     for key, item in dmq.get_knowledge().items():
         texts.append(item)
-    print(len(texts)) 
     for key, item in dma.get_knowledge().items(): 
         texts.append(item) 
     return texts
@@ -106,11 +105,3 @@ def create_dataset(repeat=3):
         f.write(entry)
     f.close()
 
-
-a,b = get_data() 
-i = 0 
-for row in a: 
-    if row[0] > 276:
-        i+=1 
-print(i) 
-#print(a) 

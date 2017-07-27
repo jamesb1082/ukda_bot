@@ -23,13 +23,13 @@ def create_base_nn_updated(embedding):
 
     seq = Sequential() 
     seq.add(embedding)
-    seq.add(Dropout(0.2))
+    seq.add(Dropout(0.1))
     seq.add(Conv1D(filters, kernel_size,padding='valid',activation='relu', strides=1))
     seq.add(GlobalMaxPooling1D())
-    seq.add(Dense(256))
-    seq.add(Dropout(0.2))
+    seq.add(Dense(1000))
+    seq.add(Dropout(0.1))
     seq.add(Activation('relu')) 
-    seq.add(Dropout(0.2))
+    seq.add(Dropout(0.1))
     seq.add(Dense(1))
     seq.add(Activation('sigmoid'))
     return seq    
@@ -106,8 +106,6 @@ def load_data():
     test_data = arr[train_val:, : ] 
     train_labels = labels[:train_val]
     test_labels = labels[train_val:] 
-    print("train: ", train_data[:,0].shape) 
-    #print(test_data.shape) 
     temp  =[test_data[:,0], test_data[:,0]]    
     return train_data,test_data,train_labels,test_labels, word_index, data 
 
@@ -193,6 +191,8 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--load", help="Load a neural network", 
             action="store", type=str) 
     args = parser.parse_args() 
+    
+    
     # ==========================================================================
     # variables 
     # ==========================================================================
@@ -200,9 +200,10 @@ if __name__ == '__main__':
     max_seq_len = 2300 
     max_nb_words = 200000
     embedding_dim = 100 
-    validation_split = 0.2 # what does valiation split mean? 
+    validation_split = 0.2 
     save_file = 'saved_models/snn.h5'
 
+    
     # ==========================================================================
     # Pre-process the data
     # ==========================================================================
@@ -211,8 +212,8 @@ if __name__ == '__main__':
     # TRAINING ON ALL THE DATA. ATTEMPTING TO OVERFIT 
     train_data = np.concatenate((train_data,test_data), axis=0) 
     train_labels = np.concatenate((train_labels, test_labels), axis=0) 
-    print("TRAIN:", train_data.shape) 
     
+
     # ========================================================================== 
     # Create a new neural network from scratch. 
     # ==========================================================================
@@ -224,21 +225,17 @@ if __name__ == '__main__':
         # Creating the inputs # what does this line actually do? check mnist script 
         question_input = Input(shape=(max_seq_len,))
         answer_input = Input(shape=(max_seq_len,))
-
-
         q_nn = base_nn(question_input)  
         a_nn = base_nn(answer_input) 
 
         distance = Lambda(euclidean_distance,
                 output_shape=eucl_dist_output_shape)([q_nn,a_nn])
 
-        model = Model([question_input, answer_input], distance)
-
+        model = Model([question_input, answer_input], distance)     
         # compile and fit
         model.compile(loss=contrastive_loss, optimizer="Adam", metrics=['accuracy']) 
         history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-                batch_size=32, epochs=100, validation_split=0)   
-        
+                batch_size=32, epochs=1000, validation_split=0)    
         training_graph(history) 
         model.save(save_file)  
 
