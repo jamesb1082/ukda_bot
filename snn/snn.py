@@ -4,6 +4,8 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.layers import Embedding, Dense, Dropout, Input, Lambda
 from keras.layers import Conv1D, GlobalMaxPooling1D, Activation
 from keras.models import Sequential, Model, load_model
+from keras.layers import Flatten, AveragePooling1D, MaxPooling1D
+from keras.optimizers import Adam  
 import os
 import numpy as np
 from preprocess import get_data, get_file_links, get_raw_strings
@@ -18,22 +20,24 @@ def create_base_nn_updated(embedding):
     """
     Same as the above function, however it is deeper.  
     """
-    filters = 250 
-    kernel_size = 5
-
+    filters = 256 
+    kernel_size = 3
+    d_value = 0.13 
     seq = Sequential() 
     seq.add(embedding)
-    seq.add(Dropout(0.1))
+    seq.add(Dropout(d_value))
     seq.add(Conv1D(filters, kernel_size,padding='valid',activation='relu', strides=1))
-    seq.add(GlobalMaxPooling1D())
-    seq.add(Dense(1000))
-    seq.add(Dropout(0.1))
-    seq.add(Activation('relu')) 
-    seq.add(Dropout(0.1))
+    #seq.add(Flatten())  
+    seq.add(GlobalMaxPooling1D()) 
+    for i in range(1):
+        seq.add(Dense(128))
+        seq.add(Dropout(d_value))  
+        seq.add(Activation('elu'))
+        seq.add(Dropout(d_value))
+    
     seq.add(Dense(1))
-    seq.add(Activation('sigmoid'))
+    seq.add(Activation('relu')) 
     return seq    
-
 
 def euclidean_distance(vects): 
     """
@@ -202,7 +206,8 @@ if __name__ == '__main__':
     embedding_dim = 100 
     validation_split = 0.2 
     save_file = 'saved_models/snn.h5'
-
+    epochs = 100
+    bs = 128 #batch size 
     
     # ==========================================================================
     # Pre-process the data
@@ -227,15 +232,16 @@ if __name__ == '__main__':
         answer_input = Input(shape=(max_seq_len,))
         q_nn = base_nn(question_input)  
         a_nn = base_nn(answer_input) 
-
+        adam = Adam(lr=0.001) 
         distance = Lambda(euclidean_distance,
                 output_shape=eucl_dist_output_shape)([q_nn,a_nn])
 
         model = Model([question_input, answer_input], distance)     
         # compile and fit
-        model.compile(loss=contrastive_loss, optimizer="Adam", metrics=['accuracy']) 
+        model.compile(loss=contrastive_loss, optimizer=adam, metrics=['accuracy']) 
         history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-                batch_size=32, epochs=2000, validation_split=0)    
+                batch_size=bs, epochs=epochs, validation_split=0, shuffle=True)    
+        save_file = 'saved_models/epochs_' + str(epochs) + '_bs_'  + str(bs) + '.h5'
         model.save(save_file) 
         
         training_graph(history)       

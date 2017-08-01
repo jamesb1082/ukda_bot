@@ -33,7 +33,7 @@ def generate_predictions(questions, corr_links, relevant_ans, model,ans_dict):
     
     pred = [] 
     for row in corr_links:
-        # print("question: ", row[0], "   answer: ", row[1]) 
+        print("question: ", row[0], "   answer: ", row[1]) 
         ans = get_answers(questions[row[0]], relevant_ans, model, row[1],ans_dict)
         pred.append( ans_dict[ans[1]]) 
     return pred
@@ -64,7 +64,8 @@ def get_answers(question,answers,model,correct_ans,converter):
     a = [converter[x] for x in range(len(answers))] 
     
     values = zip(a,score_rating)
-    #print(values)
+    print(values)
+    print() 
     return (top_val, top_pos) 
 
 
@@ -102,8 +103,8 @@ def evaluation(sequences, model):
     prediction = generate_predictions(questions,corr_in_links, 
             relevant_ans, model, answer_indexes)     
     
-    #for i in range(0, len(prediction)): 
-    #        print("label: ", labels[i], "    prediction: ", prediction[i]) 
+    for i in range(0, len(prediction)): 
+        print("label: ", labels[i], "    prediction: ", prediction[i]) 
     print()
     
     #print(len(answers))
