@@ -30,7 +30,6 @@ def generate_predictions(questions, corr_links, relevant_ans, model,ans_dict):
     """
     Returns list of predictions using get answer() function 
     """
-    
     pred = [] 
     for row in corr_links:
         print("question: ", row[0], "   answer: ", row[1]) 
@@ -62,7 +61,9 @@ def get_answers(question,answers,model,correct_ans,converter):
             top_pos = i 
     
     a = [converter[x] for x in range(len(answers))] 
-    
+    #if len(set(score_rating)) == 1: 
+        #print("Values are the same!!!") 
+
     values = zip(a,score_rating)
     print(values)
     print() 
@@ -74,6 +75,22 @@ def dummy_distance(answer,index):
         return 0
     return 1
 
+
+def ans_map(index_links,sequences): 
+    """
+    Maps an index of answers to an index in texts. 
+    
+    Returns the relevant answers and a dictionary whic
+    """
+    relevant_ans = [] 
+    answer_indexes = {} 
+    
+    # maps an index of answers to an index in texts. 
+    for li in index_links: 
+        if any((sequences[li[1]]==x).all() for x in relevant_ans) == False: 
+            relevant_ans.append(sequences[li[1]])
+            answer_indexes[len(relevant_ans)-1] =li[1] 
+    return relevant_ans, answer_indexes
 
 def evaluation(sequences, model): 
     """
@@ -88,18 +105,12 @@ def evaluation(sequences, model):
     answers = sequences[276:] 
     questions = sequences[:276]
     
+    relevant_ans, answer_indexes = ans_map(index_links, sequences)
+
     #get labels for each question. Uses correct ans links to get right labels only. 
     labels = [] 
     for row in corr_in_links: 
         labels.append(row[1]) 
-    relevant_ans = [] 
-    answer_indexes = {} 
-    
-    # maps an index of answers to an index in texts. 
-    for li in index_links: 
-        if any((sequences[li[1]]==x).all() for x in relevant_ans) == False: 
-            relevant_ans.append(sequences[li[1]])
-            answer_indexes[len(relevant_ans)-1] =li[1] 
     prediction = generate_predictions(questions,corr_in_links, 
             relevant_ans, model, answer_indexes)     
     

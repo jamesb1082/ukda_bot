@@ -85,11 +85,10 @@ def create_dataset(number = 2):
     qa_file.close() 
      
     for ans in correct_ans: 
-        # Adds the right answer
-        dataset.append([ans[0],ans[1],0])
-        # add all the wrong answers.
         for other_ans in correct_ans: 
             if other_ans[1] != ans[1]: 
+               # Adds 1 right answer and 1 wrong answer for every wrong answer. 
+                dataset.append([ans[0],ans[1],0])
                 dataset.append([ans[0], other_ans[1],1])
     shuffle(dataset) 
     f = open(new_dataset, 'w') 
@@ -98,44 +97,30 @@ def create_dataset(number = 2):
         entry = row[0] + ',' + row[1] + ',' + str(row[2])+"\n" 
         f.write(entry)
     f.close()
-    print("Dataset created: Note length is not 171^2 as correct ans only included once.")      
+ 
 
-def create_dataset_old(repeat=3):
-    """
-    Creates a random dataset in the format: question, answer,correct
-    Order is also random. 
-    """
-    dataset = [] 
-    correct_ans = [] 
-    qa_path = "../data/qa.csv"
-    new_dataset = "../data/new_qa.csv"  
-    qa_file = open(qa_path, 'r') 
-    # read data in the qa.  
-    for line in qa_file:
-        entry = line.strip("\n").split(",")  
-        correct_ans.append(entry) 
-    qa_file.close() 
 
-    for ans in correct_ans: 
-        for i in range(repeat): 
-            # generates random wrong answers. 
-            dataset.append([ans[0], ans[1],1]) 
-            value = randint(0, len(correct_ans)-1)             
-            row = correct_ans[value]
-            # ensures that a wrong answer is picked every time. 
-            if row[1] == ans[1]: 
-                while row[1] == ans[1]: 
-                    value = randint(0,len(correct_ans)-1) 
-                    row = correct_ans[value] 
 
-            dataset.append([ans[0],row[1], 0 ])  
-    print(len(dataset)) 
-    print(len(correct_ans))
-    shuffle(dataset) 
-    f = open(new_dataset, 'w') 
-    
-    for row in dataset: 
-        entry = row[0] + ',' + row[1] + ',' + str(row[2])+"\n" 
-        f.write(entry)
-    f.close()
-#create_dataset(3) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

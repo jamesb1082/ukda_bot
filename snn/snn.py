@@ -20,6 +20,8 @@ def create_base_nn_updated(embedding):
     """
     Same as the above function, however it is deeper.  
     """
+    
+    #return nn_2(embedding) 
     filters = 256 
     kernel_size = 3
     d_value = 0.13 
@@ -27,17 +29,33 @@ def create_base_nn_updated(embedding):
     seq.add(embedding)
     seq.add(Dropout(d_value))
     seq.add(Conv1D(filters, kernel_size,padding='valid',activation='relu', strides=1))
-    #seq.add(Flatten())  
+  #  seq.add(Flatten())  
     seq.add(GlobalMaxPooling1D()) 
-    for i in range(1):
-        seq.add(Dense(128))
+    for i in range(4):
+        seq.add(Dense(256))
         seq.add(Dropout(d_value))  
         seq.add(Activation('elu'))
-        seq.add(Dropout(d_value))
-    
+        seq.add(Dropout(d_value))    
     seq.add(Dense(1))
-    seq.add(Activation('relu')) 
+    seq.add(Activation('sigmoid')) 
     return seq    
+
+def nn_2(embedding): 
+    filters = 256
+    kernel_size = 3 
+    d_value = 0.13 
+    seq = Sequential() 
+    seq.add(embedding) 
+    seq.add(Conv1D(filters,kernel_size, padding='valid', activation='relu', strides=1))
+    seq.add(GlobalMaxPooling1D())
+    seq.add(Conv1D(filters,kernel_size, padding='valid', activation='relu', strides=1))
+    seq.add(GlobalMaxPooling1D())
+    seq.add(Dense(128))
+    seq.add(Dropout(d_value))
+    seq.add(Dense(1))
+    seq.add(Activation('relu'))
+    return seq
+
 
 def euclidean_distance(vects): 
     """
@@ -207,7 +225,7 @@ if __name__ == '__main__':
     validation_split = 0.2 
     save_file = 'saved_models/snn.h5'
     epochs = 100
-    bs = 128 #batch size 
+    bs = 128#batch size 
     
     # ==========================================================================
     # Pre-process the data
@@ -241,9 +259,11 @@ if __name__ == '__main__':
         model.compile(loss=contrastive_loss, optimizer=adam, metrics=['accuracy']) 
         history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
                 batch_size=bs, epochs=epochs, validation_split=0, shuffle=True)    
-        save_file = 'saved_models/epochs_' + str(epochs) + '_bs_'  + str(bs) + '.h5'
-        model.save(save_file) 
-        
+        save_model= 'saved_models/epochs_' + str(epochs) + '_bs_'  + str(bs) + '.h5'
+        save_sequences = 'sequences.json'  
+        model.save(save_model)
+        np.save("sequences.npz", sequences)  
+
         training_graph(history)       
     # ==========================================================================
     # Load a neural network 
