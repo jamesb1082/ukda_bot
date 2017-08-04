@@ -37,7 +37,7 @@ def create_base_nn_updated(embedding):
         seq.add(Activation('elu'))
         seq.add(Dropout(d_value))    
     seq.add(Dense(1))
-    seq.add(Activation('sigmoid')) 
+    seq.add(Activation('linear')) 
     return seq    
 
 def nn_2(embedding): 
@@ -224,7 +224,7 @@ if __name__ == '__main__':
     embedding_dim = 100 
     validation_split = 0.2 
     save_file = 'saved_models/snn.h5'
-    epochs = 100
+    epochs = 200
     bs = 128#batch size 
     
     # ==========================================================================
