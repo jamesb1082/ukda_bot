@@ -14,7 +14,7 @@ import seaborn as sns
 import pandas
 import argparse
 from evaluate import evaluation
-from keras.callbacks import ModelCheckpoint
+from keras.callbacks import ModelCheckpoint, TensorBoard
 
 def create_base_nn_updated(embedding): 
     """
@@ -261,10 +261,12 @@ if __name__ == '__main__':
         checkpointer = ModelCheckpoint("saved_models/weights.hdf5", verbose=1,
                 save_best_only=True) 
 
+        tb = TensorBoard(log_dir='./Log', histogram_freq=0, write_graph=True,
+                write_images=True)
 
         history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
                 batch_size=bs, epochs=epochs, validation_split=0.3, shuffle=True, 
-                callbacks=[checkpointer])    
+                callbacks=[checkpointer, tb])    
         model.load_weights("saved_models/weights.hdf5")     
         
         save_model= 'saved_models/epochs_' + str(epochs) + '_bs_'  + str(bs) + '.h5'
