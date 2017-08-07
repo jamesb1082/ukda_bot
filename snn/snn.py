@@ -15,7 +15,7 @@ import pandas
 import argparse
 from evaluate import evaluation
 from keras.callbacks import ModelCheckpoint, TensorBoard
-
+import pickle 
 def create_base_nn_updated(embedding): 
     """
     Same as the above function, however it is deeper.  
@@ -110,7 +110,10 @@ def load_data():
         if len(i) > value: 
             value = len(i) 
     word_index = tokenizer.word_index 
-    data = pad_sequences(sequences, 2300) 
+    data = pad_sequences(sequences, 2300)
+
+    with open('tokenizer.p', 'w') as f : 
+        pickle.dump(tokenizer, f) 
     labels = []
     # build a 3d numpy array to fit input type 
     arr = np.zeros((len(text_index), 2, max_seq_len)) 
@@ -197,6 +200,26 @@ def display_results(train_out, test_out, model):
         print(model.metrics_names[i], ': ', round(test_out[i],5))
 
 
+def build_model(word_index, embedding_dim=100): 
+    """
+    Returns the siamese neural network model. 
+    """
+    glove_dir = '../../vectors/glove/' 
+    max_nb_words = 200000
+    
+    base_nn = create_base_nn_updated(create_embedding(word_index,glove_dir, 
+                   max_nb_words)) 
+    
+    question_input = Input(shape=(max_seq_len,))
+    answer_input = Input(shape=(max_seq_len,))
+    q_nn = base_nn(question_input)  
+    a_nn = base_nn(answer_input) 
+    distance = Lambda(euclidean_distance,
+                output_shape=eucl_dist_output_shape)([q_nn,a_nn])
+    
+    return Model([question_input, answer_input], distance)  
+
+
 def training_graph(history): 
     """
     Displays a graph showing acc vs epochs
@@ -218,15 +241,12 @@ if __name__ == '__main__':
     # ==========================================================================
     # variables 
     # ==========================================================================
-    glove_dir = '../../vectors/glove/' 
-    max_seq_len = 2300 
-    max_nb_words = 200000
-    embedding_dim = 100 
     validation_split = 0.2 
     save_file = 'saved_models/snn.h5'
     epochs = 120
-    bs = 128#batch size 
-    
+    bs = 128#batch size  
+    max_seq_len = 2300
+    embedding_dim = 100 
     # ==========================================================================
     # Pre-process the data
     # ==========================================================================
@@ -242,19 +262,11 @@ if __name__ == '__main__':
     # ==========================================================================
     if args.load == None:  
         print("Update: Indexing word vectors") 
-        base_nn = create_base_nn_updated(create_embedding(word_index,glove_dir, 
-                   max_nb_words))
-        # Using the same input for both? As it seems to be just about dimensions
+                # Using the same input for both? As it seems to be just about dimensions
         # Creating the inputs # what does this line actually do? check mnist script 
-        question_input = Input(shape=(max_seq_len,))
-        answer_input = Input(shape=(max_seq_len,))
-        q_nn = base_nn(question_input)  
-        a_nn = base_nn(answer_input) 
         adam = Adam(lr=0.001) 
-        distance = Lambda(euclidean_distance,
-                output_shape=eucl_dist_output_shape)([q_nn,a_nn])
-
-        model = Model([question_input, answer_input], distance)     
+        
+        model = build_model(word_index) 
         # compile and fit
         model.compile(loss=contrastive_loss, optimizer=adam, metrics=['accuracy']) 
         
@@ -270,9 +282,7 @@ if __name__ == '__main__':
         model.load_weights("saved_models/weights.hdf5")     
         
         save_model= 'saved_models/epochs_' + str(epochs) + '_bs_'  + str(bs) + '.h5'
-        save_sequences = 'sequences.json'  
         model.save(save_model)
-        np.save("sequences.npz", sequences)  
     
         training_graph(history)       
     # ==========================================================================
