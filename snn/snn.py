@@ -14,7 +14,7 @@ import seaborn as sns
 import pandas
 import argparse
 from evaluate import evaluation
-
+from keras.callbacks import ModelCheckpoint
 
 def create_base_nn_updated(embedding): 
     """
@@ -24,15 +24,15 @@ def create_base_nn_updated(embedding):
     #return nn_2(embedding) 
     filters = 256 
     kernel_size = 3
-    d_value = 0.13 
+    d_value = 0.05 
     seq = Sequential() 
     seq.add(embedding)
     seq.add(Dropout(d_value))
     seq.add(Conv1D(filters, kernel_size,padding='valid',activation='relu', strides=1))
   #  seq.add(Flatten())  
     seq.add(GlobalMaxPooling1D()) 
-    for i in range(4):
-        seq.add(Dense(256))
+    for i in range(2):
+        seq.add(Dense(512))
         seq.add(Dropout(d_value))  
         seq.add(Activation('elu'))
         seq.add(Dropout(d_value))    
@@ -224,7 +224,7 @@ if __name__ == '__main__':
     embedding_dim = 100 
     validation_split = 0.2 
     save_file = 'saved_models/snn.h5'
-    epochs = 200
+    epochs = 120
     bs = 128#batch size 
     
     # ==========================================================================
@@ -257,13 +257,21 @@ if __name__ == '__main__':
         model = Model([question_input, answer_input], distance)     
         # compile and fit
         model.compile(loss=contrastive_loss, optimizer=adam, metrics=['accuracy']) 
+        
+        checkpointer = ModelCheckpoint("saved_models/weights.hdf5", verbose=1,
+                save_best_only=True) 
+
+
         history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-                batch_size=bs, epochs=epochs, validation_split=0, shuffle=True)    
+                batch_size=bs, epochs=epochs, validation_split=0.3, shuffle=True, 
+                callbacks=[checkpointer])    
+        model.load_weights("saved_models/weights.hdf5")     
+        
         save_model= 'saved_models/epochs_' + str(epochs) + '_bs_'  + str(bs) + '.h5'
         save_sequences = 'sequences.json'  
         model.save(save_model)
         np.save("sequences.npz", sequences)  
-
+    
         training_graph(history)       
     # ==========================================================================
     # Load a neural network 
