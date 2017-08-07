@@ -1,3 +1,11 @@
+ =======Results===========
+Training set tests:
+loss :  0.01536
+acc :  0.58752
+Test set tests:
+loss :  0.01674
+acc :  0.5887
+
              precision    recall  f1-score   support
 
         277       1.00      1.00      1.00         6
