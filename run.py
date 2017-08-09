@@ -11,13 +11,14 @@ if __name__ =='__main__':
     parser.add_argument("-t","--test", help="run in test mode", action="store_true")
     
     args = parser.parse_args() 
+    #print(argp1[1]) 
     print("---------------------------------------")
     if args.test:
         print("Mode: test") 
         print("Training please wait...") 
         bot1 = Simple_bot(0.8)
         print("Testing please wait...") 
-        bot1.test()
+        bot1.test2()
 
     else:
         print("Mode: chat")

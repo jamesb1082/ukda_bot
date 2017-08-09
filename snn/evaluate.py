@@ -42,7 +42,8 @@ def generate_predictions(questions, corr_links, relevant_ans, model,ans_dict):
 
 def get_answers(question,answers,model,correct_ans,converter): 
     """
-    get the answers with the closest distance
+    get the answer with the closest distance
+    Note: correct_ans is only for the dummy function and can be passed an empty string.
     """
     score_rating = [] 
     question = question.reshape(1,2300)
@@ -65,8 +66,8 @@ def get_answers(question,answers,model,correct_ans,converter):
         #print("Values are the same!!!") 
 
     values = zip(a,score_rating)
-    print(values)
-    print() 
+    #print(values)
+    #print() 
     return (top_val, top_pos) 
 
 

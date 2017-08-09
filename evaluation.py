@@ -52,6 +52,8 @@ def return_ranked(q, ans, k_corpus):
 def report(answers, pred, true): 
     # t_names = ["Class " + str(x) for x in range(0, len(answers))]
     #print(classification_report(true,pred,target_names=t_names)) 
+    
+    print(true)
     print(classification_report(true,pred)) 
 
 def find_pos(ans, k_corpus):   
@@ -65,7 +67,8 @@ def method_a():
     q_bank = DataManager('questions') 
     k_bank = DataManager('knowledge') 
     corpus = load_corpus(q_bank, k_bank)
-
+    print(corpus[0]) 
+    exit()
     pred_dict = {} 
     # split questions and answers into two seperate lists
     q_corpus = [] 
@@ -167,7 +170,7 @@ print("======================================")
 method_a()
 print()
 print()
-
+exit() 
 print("METHOD B") 
 print("======================================") 
 method_b() 

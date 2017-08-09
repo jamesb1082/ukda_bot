@@ -26,7 +26,7 @@ class DataManager():
     
     def get_knowledge(self): 
         return self.__knowledge
-   def load_data(self): 
+    def load_data(self): 
         """
         Loads the data in the supplied folder into a dictionary. 
         """ 

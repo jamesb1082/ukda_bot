@@ -16,6 +16,8 @@ import argparse
 from evaluate import evaluation
 from keras.callbacks import ModelCheckpoint, TensorBoard
 import pickle 
+
+
 def create_base_nn_updated(embedding): 
     """
     Same as the above function, however it is deeper.  
@@ -24,11 +26,11 @@ def create_base_nn_updated(embedding):
     #return nn_2(embedding) 
     filters = 256 
     kernel_size = 3
-    d_value = 0.05 
+    d_value = 0.1 
     seq = Sequential() 
     seq.add(embedding)
     seq.add(Dropout(d_value))
-    seq.add(Conv1D(filters, kernel_size,padding='valid',activation='relu', strides=1))
+    seq.add(Conv1D(filters, kernel_size,padding='same',activation='elu', strides=1))
   #  seq.add(Flatten())  
     seq.add(GlobalMaxPooling1D()) 
     for i in range(2):
@@ -39,22 +41,6 @@ def create_base_nn_updated(embedding):
     seq.add(Dense(1))
     seq.add(Activation('linear')) 
     return seq    
-
-def nn_2(embedding): 
-    filters = 256
-    kernel_size = 3 
-    d_value = 0.13 
-    seq = Sequential() 
-    seq.add(embedding) 
-    seq.add(Conv1D(filters,kernel_size, padding='valid', activation='relu', strides=1))
-    seq.add(GlobalMaxPooling1D())
-    seq.add(Conv1D(filters,kernel_size, padding='valid', activation='relu', strides=1))
-    seq.add(GlobalMaxPooling1D())
-    seq.add(Dense(128))
-    seq.add(Dropout(d_value))
-    seq.add(Dense(1))
-    seq.add(Activation('relu'))
-    return seq
 
 
 def euclidean_distance(vects): 
@@ -157,7 +143,7 @@ def compute_acc(pred, labels):
     return labels[pred.ravel() < 0.5].mean() 
 
 
-def create_embedding(word_index, glove_dir, max_nb_words):
+def create_embedding(word_index, glove_dir, max_nb_words, embedding_dim, max_seq_len):
     """
     Generates the embedding layer and returns it 
     """
@@ -165,7 +151,6 @@ def create_embedding(word_index, glove_dir, max_nb_words):
     # Generating vector embeddings
     num_words = min(max_nb_words, len(word_index)+1)
     embedding_matrix = np.zeros((num_words, embedding_dim)) 
-
     print("Update: Generating vector embeddings")
     for word, i in word_index.items(): 
         if i >=max_nb_words:
@@ -205,10 +190,10 @@ def build_model(word_index, embedding_dim=100):
     Returns the siamese neural network model. 
     """
     glove_dir = '../../vectors/glove/' 
-    max_nb_words = 200000
-    
+    max_nb_words = 200000 
+    max_seq_len = 2300 # hard  coded into the length of the strings
     base_nn = create_base_nn_updated(create_embedding(word_index,glove_dir, 
-                   max_nb_words)) 
+                   max_nb_words, embedding_dim, max_seq_len)) 
     
     question_input = Input(shape=(max_seq_len,))
     answer_input = Input(shape=(max_seq_len,))
@@ -243,7 +228,7 @@ if __name__ == '__main__':
     # ==========================================================================
     validation_split = 0.2 
     save_file = 'saved_models/snn.h5'
-    epochs = 120
+    epochs = 200
     bs = 128#batch size  
     max_seq_len = 2300
     embedding_dim = 100 
@@ -262,7 +247,7 @@ if __name__ == '__main__':
     # ==========================================================================
     if args.load == None:  
         print("Update: Indexing word vectors") 
-                # Using the same input for both? As it seems to be just about dimensions
+        # Using the same input for both? As it seems to be just about dimensions
         # Creating the inputs # what does this line actually do? check mnist script 
         adam = Adam(lr=0.001) 
         

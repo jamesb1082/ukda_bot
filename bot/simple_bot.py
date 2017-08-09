@@ -109,6 +109,7 @@ class Simple_bot:
         tp= 0 
         t0 = time()
         i = 0
+        correct = 0
         for c in conversations:
             i+=1
             question = c[0] 
