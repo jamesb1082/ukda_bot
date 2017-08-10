@@ -269,19 +269,22 @@ if __name__ == '__main__':
         save_model= 'saved_models/epochs_' + str(epochs) + '_bs_'  + str(bs) + '.h5'
         model.save(save_model)
     
-        training_graph(history)       
+        training_graph(history)        
+        train_out = model.evaluate([train_data[:,0], train_data[:,1]] , train_labels, batch_size=32) 
+        test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=32)  
+        display_results(train_out, test_out, model)
+        evaluation(sequences, model)   
     # ==========================================================================
     # Load a neural network 
     # ==========================================================================
     else: 
         print("Loading Model") 
-        model = load_model(args.load, custom_objects={'contrastive_loss':contrastive_loss}) 
-        history = model.fit([train_data[:,0], train_data[:,1]], train_labels,
-                batch_size=32, epochs=0, validation_split=0.2)     
+        #model = load_model(args.load, custom_objects={'contrastive_loss':contrastive_loss}) 
+        model = build_model(word_index, embedding_dim) 
+        model.load_weights("saved_models/weights.hdf5") 
+        #history = model.fit([train_data[:,0], train_data[:,1]], train_labels,
+        #        batch_size=32, epochs=0, validation_split=0.2)     
     # ==========================================================================
     # Evaluate and display results
     # ==========================================================================
-    train_out = model.evaluate([train_data[:,0], train_data[:,1]] , train_labels, batch_size=32) 
-    test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=32)  
-    display_results(train_out, test_out, model)
-    evaluation(sequences, model)  
+    evaluation(sequences, model)   

@@ -16,20 +16,30 @@ class Chatbot():
         """
         links = pp.get_file_links("../data/new_qa.csv") 
         texts = pp.get_raw_strings() 
+        self.texts1 = texts  
         index_links, self.__corr_in_links = e.generate_index(links,texts) 
+        
         self.__tokenizer = self.get_tokenizer() 
+        
         sequences = self.get_sequences(self.__tokenizer, texts) 
+        
         self.__relevant_ans, self.__answer_indexes = e.ans_map(index_links, sequences)  
         self.__word_index = self.__tokenizer.word_index
-        self.__answers = texts[276:]  
+        
+        self.__seq_answers = sequences[276:] 
+        self.__text_answers = texts[276:]  # in evaluate this is actually sequences. 
+        
+        
         # =========================================================================
         # Load model and weights
         # =========================================================================
-        #self.__model = build_model(self.__word_index, 100)
-#        self.__model.load_weights("saved_models/weights.hdf5") 
-        self.__model = load_model("saved_models/saved_model.h5", 
-                custom_objects={"contrastive_loss":contrastive_loss})
+        self.__model = build_model(self.__word_index, 100)
+        self.__model.load_weights("saved_models/weights.hdf5") 
+       # self.__model = load_model("saved_models/saved_model.h5", 
+       #         custom_objects={"contrastive_loss":contrastive_loss})
         self.__model._make_predict_function()
+    
+    
     def get_tokenizer(self):
         """
         Loads a keras tokenizer which was fitted when training model using  pickle 
@@ -54,8 +64,10 @@ class Chatbot():
         #q = question.encode('utf8')  
         q_sequence = self.__tokenizer.texts_to_sequences([unidecode(question)])
         q_sequence = pad_sequences(q_sequence,2300) 
-        answer = e.get_answers(q_sequence, self.__relevant_ans, self.__model,"",self.__answer_indexes) 
-        return self.__answers[answer[1]]
+        answer = e.get_answers(q_sequence, self.__relevant_ans, self.__model,"",
+                self.__answer_indexes) 
+        #        return self.__text_answers[answer[1]
+        return self.texts1[self.__answer_indexes[answer[1]]]
     
     
     def interactive(self): 
