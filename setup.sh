@@ -22,6 +22,7 @@ pip install flask
 # =============================================================================
 # download glove vectors to correct location  
 # =============================================================================
+mkdir vectors
 wget http://nlp.stanford.edu/data/glove.6B.zip 
 unzip glove.6B.zip 
 rm glove.6B.50d.txt
