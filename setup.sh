@@ -11,13 +11,14 @@ pip install sklearn
 pip install chatterbot
 pip install matplotlib
 pip install seaborn
-pip install tabulate
-pip install nltk
 pip install gensim 
 pip install jupyter
 pip install tensorflow-gpu
 pip install keras
 pip install h5py
+pip install pickle
+pip install progressbar
+pip install flask 
 # =============================================================================
 # download glove vectors to correct location  
 # =============================================================================
@@ -37,3 +38,5 @@ mkdir vectros/word2vec
 gzip -d GoogleNews-vectors-negative300.bin.gz
 rm GoogleNews-vectors-negative300.bin.gz 
 mv GoogleNews-vectors-negative300.bin vectors/word2vec
+
+python test.py
