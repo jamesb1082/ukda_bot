@@ -1,3 +1,4 @@
 data/*
 *.pyc
 snn/saved_models
+vectors/*

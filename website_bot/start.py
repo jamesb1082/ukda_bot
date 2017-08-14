@@ -1,5 +1,7 @@
+import sys
+sys.path.insert(0,"../") 
 from flask import Flask, request, render_template, redirect, url_for 
-from chatbot import Chatbot
+from snn_chatbot.chatbot import Chatbot
 
 app = Flask(__name__) 
 
