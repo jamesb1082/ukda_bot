@@ -13,6 +13,7 @@ from keras import backend as K
 import seaborn as sns 
 import pandas
 import argparse
+import matplotlib.pyplot as plt 
 from evaluate import evaluation
 from keras.callbacks import ModelCheckpoint, TensorBoard
 import pickle 
@@ -213,7 +214,7 @@ def training_graph(history):
     data = pandas.DataFrame({"acc":dt})      
     ax = sns.tsplot(data=data["acc"] )
     ax.set(xlabel="epoch", ylabel="Accuracy") 
-    sns.plt.show() 
+    plt.show() 
 
 
 if __name__ == '__main__':  

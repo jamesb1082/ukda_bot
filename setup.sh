@@ -19,6 +19,7 @@ pip install h5py
 pip install pickle
 pip install progressbar
 pip install flask 
+pip install unidecode
 # ========================================================================
 # download glove vectors to correct location  
 # ========================================================================
