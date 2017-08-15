@@ -23,7 +23,7 @@ large and so will take a while.
 This project is more a proof of concept than a deployable product, and as such there are no deployment notes. 
 
 
-## Explaination of Underlying Data System ## 
+## Explanation of Underlying Data System ## 
 
 For this project, a relatively simple interface has been created between the files stored and 
 the various different approaches to creating a chatbot. One can find this interface as a Python object in dm/managers.py. 
