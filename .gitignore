@@ -2,3 +2,4 @@ data/*
 *.pyc
 snn/saved_models
 vectors/*
+wmd_python
