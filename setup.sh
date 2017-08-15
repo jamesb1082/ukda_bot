@@ -46,4 +46,9 @@ mkdir data
 mkdir data/questions
 mkdir data/knowledge
 touch data/qa.csv
+# ========================================================================
+# clone github repo for wmd 
+# ========================================================================
+git clone https://github.ocm/ssamot/wmd-python
+
 python test.py
