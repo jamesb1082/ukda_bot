@@ -4,6 +4,8 @@ sys.path.insert(0, "../")
 from dm.managers import DataManager
 from preprocess import get_file_links, get_raw_strings
 from sklearn.metrics import classification_report
+import glob 
+
 
 def generate_index(links, texts):
     """
@@ -38,8 +40,6 @@ def generate_predictions(questions, corr_links, relevant_ans, model,ans_dict):
         ans = get_answers(questions[row[0]], relevant_ans, model, row[1],ans_dict)
         pred.append( ans_dict[ans[1]]) 
     return pred
-
-
 
 
 def get_answers(question,answers,model,correct_ans,converter): 
@@ -95,6 +95,7 @@ def ans_map(index_links,sequences):
             answer_indexes[len(relevant_ans)-1] =li[1] 
     return relevant_ans, answer_indexes
 
+
 def evaluation(sequences, model): 
     """
     Evaluation function which performs evaluates the neural network acting as a distance
@@ -102,11 +103,13 @@ def evaluation(sequences, model):
     """
     print()
     print("=======================EVALUATION=====================") 
-    links = get_file_links("../data/new_qa.csv")
+    links = get_file_links("../data/test_correct.csv")
     texts = get_raw_strings() 
     index_links, corr_in_links = generate_index(links, texts)  
-    answers = sequences[276:] 
-    questions = sequences[:276]
+    numq = len(glob.glob("../data/questions/*.txt") )  
+    
+    answers = sequences[numq:] 
+    questions = sequences[:numq]
     
     relevant_ans, answer_indexes = ans_map(index_links, sequences)
 

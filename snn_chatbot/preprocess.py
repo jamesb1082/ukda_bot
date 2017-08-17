@@ -4,6 +4,8 @@ from dm.managers import DataManager
 from random import randint, shuffle 
 import progressbar 
 import sys 
+
+
 def get_data(): 
     """
     Gets data from the new dataset. 
@@ -42,6 +44,7 @@ def get_data():
     sys.stdout.write("\n") 
     return index_links, texts
 
+
 def get_raw_strings(): 
     """
     Loads all the strings in the dataset.
@@ -68,6 +71,39 @@ def get_file_links(data_dir = '../data/new_qa.csv'):
     return data 
 
 
+
+def split_dataset(p_split):
+    qa_path = "../data/qa.csv" 
+    qa_file = open(qa_path,'r') 
+    training_path = "../data/train_correct.csv" 
+    test_path = "../data/test_correct.csv" 
+    correct_ans = []  
+        
+    for line in qa_file: 
+        entry = line.strip("\n").split(",")
+        correct_ans.append(entry) 
+    qa_file.close()
+
+
+    value = int(len(correct_ans) * (1- p_split)) 
+    train_questions = correct_ans[:value] 
+    test_questions = correct_ans[value:]  
+    
+    with open(training_path, 'w') as f: 
+        for row in train_questions: 
+            entry = row[0] + ',' + row[1]+"\n" 
+            f.write(entry)
+    
+    with open(test_path, 'w') as f: 
+        for row in test_questions:
+            #note they have to have a 0 on the end to fit with the evaluation script
+            entry = row[0] + ',' + row[1]+"," + str(0)  + "\n" 
+            f.write(entry)
+    
+
+    
+
+
 def create_dataset(number = 2):
     """
     Creates a new dataset which maps 1 right answer and every other answer as wrong.
@@ -76,7 +112,7 @@ def create_dataset(number = 2):
     """
     dataset = [] 
     correct_ans = [] 
-    qa_path = "../data/qa.csv"
+    qa_path = "../data/train_correct.csv"
     new_dataset = "../data/new_qa.csv" 
      
     #read in the right answer questions.
@@ -99,29 +135,6 @@ def create_dataset(number = 2):
         entry = row[0] + ',' + row[1] + ',' + str(row[2])+"\n" 
         f.write(entry)
     f.close()
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
