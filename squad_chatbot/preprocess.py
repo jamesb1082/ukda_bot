@@ -5,6 +5,8 @@ import progressbar
 import sys 
 from dm.squad import SquadManager 
 from unidecode import unidecode 
+
+
 def get_data(): 
     """
     Gets data from the new dataset (squad). 
@@ -20,7 +22,6 @@ def get_data():
     
     strings = [] 
     
-
     # blocked out as it is time consuming and not needed due to file format. 
     """ 
     count = 0 
@@ -76,6 +77,10 @@ def get_file_links(data_dir = '../data/squad/new_qa.csv'):
     return data 
 
 
+def estimate_rows(n):
+    return n * n * 2 
+
+
 
 def split_dataset(p_split):
     qa_path = "../data/qa.csv" 
@@ -124,7 +129,7 @@ def create_dataset(number = 2):
     qa_path = "../data/squad/qa.csv"
     new_dataset = "../data/squad/new_qa.csv"
     
-    
+    print("Estimated number of rows: ", estimate_rows(number))    
     #read in the right answer questions.
     qa_file = open(qa_path,'r') 
     for i in range(0,number):  
@@ -218,7 +223,7 @@ def create_sqds(number , start ):
                     dataset.append([ans[0],ans[1],0])
                     dataset.append([ans[0], other_ans[1],1]) 
                 
-        #shuffle(dataset)  
+        shuffle(dataset)  
         f = open(new_dataset, 'a') 
         for row in dataset: 
             entry = row[0] + ',' + row[1] + ',' + str(row[2])+"\n" 

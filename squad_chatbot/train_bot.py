@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 from evaluate import evaluation
 from keras.callbacks import ModelCheckpoint, TensorBoard
 import pickle 
+from batcher import load_batches,num_per_epoch 
 
 def create_base_nn_updated(embedding): 
     """
@@ -233,21 +234,18 @@ if __name__ == '__main__':
     epochs = 5
     bs = 64#batch size  
     max_seq_len = 2300
-    embedding_dim = 100 
+    embedding_dim = 100
+    max_nb_words = 200000
     # ==========================================================================
     # Pre-process the data
     # ==========================================================================
-    print("Update: Preprocessing data") 
-    train_data, test_data, train_labels, test_labels, word_index, sequences= load_data() 
-   
-    # True means that it will train on all the data, not based on "validation" split 
-    overfitting = True 
-    if overfitting: 
-        train_data = np.concatenate((train_data,test_data), axis=0) 
-        train_labels = np.concatenate((train_labels, test_labels), axis=0) 
-        print("attempting to overfit") 
-        print(train_data.shape) 
-
+    texts = get_raw_strings() 
+    
+    tokenizer = Tokenizer(num_words=max_nb_words,
+            filters='#$%()*+,-./:;<=>?@[\\]^_{|}~\t\n', lower=True, split=" ") 
+    tokenizer.fit_on_texts(texts) 
+    word_index = tokenizer.word_index  
+    sequences = tokenizer.texts_to_sequences(texts)  
     # ========================================================================== 
     # Create a new neural network from scratch. 
     # ==========================================================================
@@ -264,14 +262,19 @@ if __name__ == '__main__':
         checkpointer = ModelCheckpoint("models/weights.hdf5", verbose=1,
                 save_best_only=True) 
 
-        tb = TensorBoard(log_dir='./Log', histogram_freq=0, write_graph=True,
-                write_images=True)
-        print(train_data.shape) 
-        history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
-                batch_size=bs, epochs=epochs, validation_split=0.2, shuffle=True, 
-                callbacks=[checkpointer, tb])    
-        model.load_weights("models/weights.hdf5")     
+        #tb = TensorBoard(log_dir='./Log', histogram_freq=0, write_graph=True,
+        #        write_images=True)
+        #history = model.fit([train_data[:,0], train_data[:,1]], train_labels, 
+        #        batch_size=bs, epochs=epochs, validation_split=0.2, shuffle=True, 
+        #        callbacks=[checkpointer, tb])    
         
+        
+        
+        model.load_weights("models/weights.hdf5")     
+        history = model.fit_generator(load_batches(tokenizer,bs), 
+                steps_per_epoch=num_per_epoch(bs),epochs = 5, use_multiprocessing=False)  
+        model.load_weights("models/weights.hdf5")     
+ 
         save_model= 'models/epochs_' + str(epochs) + '_bs_'  + str(bs) + '.h5'
         model.save(save_model)
     
@@ -287,7 +290,7 @@ if __name__ == '__main__':
     # ==========================================================================
     # Evaluate and display results
     # ==========================================================================
-    train_out = model.evaluate([train_data[:,0], train_data[:,1]] , train_labels, batch_size=32) 
-    test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=32)  
-    display_results(train_out, test_out, model)
+    #train_out = model.evaluate([train_data[:,0], train_data[:,1]] , train_labels, batch_size=32) 
+    #test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=32)  
+    #display_results(train_out, test_out, model)
     evaluation(sequences, model)  

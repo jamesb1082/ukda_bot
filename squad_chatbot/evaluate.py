@@ -15,21 +15,14 @@ def generate_index(links, texts):
     index_links = []
     correct_index_links = [] # for the correct answer pairs 
     
-    """
     for row in links: 
-        current = [] 
-        for i in range(0, len(texts)): 
-            if dmq.get_page(row[0]) == texts[i]: 
-                current.append(i) 
-        for i in range(0, len(texts)): 
-            if dma.get_page(row[1]) == texts[i]: 
-                current.append(i) 
+        current = [row[0], row[1] ] 
         index_links.append(current)
         if int(row[2]) == 0 and current not in correct_index_links: # 0 is label for correct 
             correct_index_links.append(current) 
-    """
 
     index_links = links  
+    
     return index_links, correct_index_links
 
 
@@ -109,24 +102,38 @@ def evaluation(sequences, model):
     links = get_file_links()
     texts = get_raw_strings() 
     index_links, corr_in_links = generate_index(links, texts)  
-    numq = len(glob.glob("../data/questions/*.txt") )  
     
+    
+    numq = len(SquadManager().get_questions() )  
     answers = sequences[numq:] 
     questions = sequences[:numq]
     
     relevant_ans, answer_indexes = ans_map(index_links, sequences)
 
     #get labels for each question. Uses correct ans links to get right labels only. 
-    labels = [] 
+    labels = []
+
+    print("Len links: ", len(links)) 
+    print("Len text: ", len(texts)) 
+    print("Len index links: ", len(index_links)) 
+    print("Len corr in links", len(corr_in_links)) 
+   
+    exit()
+   
+   
+    for i in range(0, 10): 
+        print(corr_in_links[i ]) 
+    
     for row in corr_in_links: 
         labels.append(row[1]) 
     prediction = generate_predictions(questions,corr_in_links, 
             relevant_ans, model, answer_indexes)     
     
+
     for i in range(0, len(prediction)): 
         print("label: ", labels[i], "    prediction: ", prediction[i]) 
     print()
-    
+    print("Number of labels: " ,len(labels))  
     #print(len(answers))
     print(classification_report(labels,prediction))
 
