@@ -90,6 +90,7 @@ def ans_map(index_links,sequences):
     
     # maps an index of answers to an index in texts. 
     for li in index_links: 
+        print(type(sequences)) 
         if any((sequences[li[1]]==x).all() for x in relevant_ans) == False: 
             relevant_ans.append(sequences[li[1]])
             answer_indexes[len(relevant_ans)-1] =li[1] 

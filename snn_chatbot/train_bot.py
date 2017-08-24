@@ -98,7 +98,7 @@ def load_data():
             value = len(i) 
     word_index = tokenizer.word_index 
     data = pad_sequences(sequences, 2300)
-
+    print(type(data)) 
     with open('tokenizer.p', 'w') as f : 
         pickle.dump(tokenizer, f) 
     labels = []
@@ -231,8 +231,8 @@ if __name__ == '__main__':
     # ==========================================================================
     validation_split = 0.2 
     save_file = 'models/snn.h5'
-    epochs = 2
-    bs = 128#batch size  
+    epochs = 1000
+    bs = 64#batch size  
     max_seq_len = 2300
     embedding_dim = 100 
     # ==========================================================================

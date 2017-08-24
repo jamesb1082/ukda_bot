@@ -113,29 +113,117 @@ def create_dataset(number = 2):
     dataset = [] 
     correct_ans = [] 
     qa_path = "../data/train_correct.csv"
-    new_dataset = "../data/new_qa.csv" 
-     
+    new_dataset = "../data/new_qa.csv"
+
+    # for the squad database 
+    qa_path = "../data/squad/qa.csv"
+    new_dataset = "../data/squad/new_qa.csv"
+    
+    
     #read in the right answer questions.
     qa_file = open(qa_path,'r') 
     for i in range(0,number):  
         entry= qa_file.readline().strip("\n").split(",") 
         correct_ans.append(entry) 
     qa_file.close() 
-     
+    
+    
+    count = 0 
+    bar = progressbar.ProgressBar(maxval=len(correct_ans),
+            widgets=["Generating Pairs: ", progressbar.Bar('=','[',']'), ' ', 
+                progressbar.Percentage(), ' ',  
+                progressbar.ETA()])
+    bar.start()
+    count = 0 
     for ans in correct_ans: 
         for other_ans in correct_ans: 
             if other_ans[1] != ans[1]: 
                # Adds 1 right answer and 1 wrong answer for every wrong answer. 
                 dataset.append([ans[0],ans[1],0])
                 dataset.append([ans[0], other_ans[1],1])
-    shuffle(dataset) 
-    f = open(new_dataset, 'w') 
     
+        count+=1
+        bar.update(count)
+    sys.stdout.write("\n")  
+    shuffle(dataset)  
+    f = open(new_dataset, 'w') 
+    bar = progressbar.ProgressBar(maxval=len(dataset),
+            widgets=["Storing pairs: ", progressbar.Bar('=','[',']'), ' ', 
+                progressbar.Percentage(), ' ',  
+                progressbar.ETA()])
+    bar.start()
+    count = 0 
     for row in dataset: 
         entry = row[0] + ',' + row[1] + ',' + str(row[2])+"\n" 
         f.write(entry)
+        count+=1 
+        bar.update(count) 
+    sys.stdout.write("\n")      
     f.close()
 
+
+
+def create_sqds(number , start ):
+    """
+    Creates a new dataset which maps 1 right answer and every other answer as wrong.
+    Notdone for all possible answers, but all the other correct answers. 
+    ask spyros if this should be changed. 
+    
+    This can only be used to create the full dataset using a batching technique.
+    do not use this to create a partial dataset instead us create_dataset(number)  
+    """
+    dataset = [] 
+    correct_ans = [] 
+    qa_path = "../data/train_correct.csv"
+    new_dataset = "../data/new_qa.csv"
+
+    # for the squad database 
+    qa_path = "../data/squad/qa.csv"
+    new_dataset = "../data/squad/new_qa.csv"
+    
+    
+    #read in the right answer questions.
+    qa_file = open(qa_path,'r')
+    for line in qa_file: 
+        entry= line.strip("\n").split(",") 
+        correct_ans.append(entry) 
+    qa_file.close() 
+    count = 0
+
+    num_batch = 349
+    bar = progressbar.ProgressBar(maxval=num_batch,
+            widgets=["Generating Pairs: ", progressbar.Bar('=','[',']'), ' ', 
+                progressbar.Percentage(), ' ',  
+                progressbar.ETA()])
+    bar.start()
+    start = 0
+    finish = 0 
+    batch_size = 251
+    
+    
+    for i in range(0, num_batch): 
+        dataset = []
+        start = finish
+        finish = start+batch_size
+        for j in range(start, finish): 
+            ans = correct_ans[j]  
+            for other_ans in correct_ans: 
+                if other_ans[1] != ans[1]: 
+                   # Adds 1 right answer and 1 wrong answer for every wrong answer. 
+                    dataset.append([ans[0],ans[1],0])
+                    dataset.append([ans[0], other_ans[1],1]) 
+                
+        #shuffle(dataset)  
+        f = open(new_dataset, 'a') 
+        for row in dataset: 
+            entry = row[0] + ',' + row[1] + ',' + str(row[2])+"\n" 
+            f.write(entry)
+        f.close()
+        del dataset 
+        count+=1
+        bar.update(count)
+    sys.stdout.write("\n")  
+        
 
 
 

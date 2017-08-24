@@ -60,12 +60,10 @@ class Chatbot():
         """
         Gets the answer for a specific question 
         """
-        #q = question.encode('utf8')  
         q_sequence = self.__tokenizer.texts_to_sequences([unidecode(question)])
         q_sequence = pad_sequences(q_sequence,2300) 
         answer = e.get_answers(q_sequence, self.__relevant_ans, self.__model,"",
                 self.__answer_indexes) 
-        #        return self.__text_answers[answer[1]
         return self.texts1[self.__answer_indexes[answer[1]]]
     
     
