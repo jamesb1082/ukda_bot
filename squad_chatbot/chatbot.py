@@ -8,12 +8,14 @@ from keras.preprocessing.sequence import pad_sequences
 from unidecode import unidecode
 from keras.models import load_model 
 from train_bot import contrastive_loss, build_model 
+from dm.squad import SquadManager
+
 class Chatbot(): 
     def __init__(self):
         """
         initialises the chatbot
         """
-        links = pp.get_file_links("../data/new_qa.csv") 
+        links = pp.get_file_links("../data/squad/new_qa.csv") 
         texts = pp.get_raw_strings() 
         self.texts1 = texts  
         index_links, self.__corr_in_links = e.generate_index(links,texts) 
@@ -25,8 +27,11 @@ class Chatbot():
         self.__relevant_ans, self.__answer_indexes = e.ans_map(index_links, sequences)  
         self.__word_index = self.__tokenizer.word_index
         
-        self.__seq_answers = sequences[276:] 
-        self.__text_answers = texts[276:]  # in evaluate this is actually sequences. 
+        dms = SquadManager() 
+        self.__text_answers = dms.get_answers()   
+        print(self.__text_answers[1]) 
+        self.__seq_answers = sequences[len(dms.get_questions()):] 
+        #self.__text_answers = texts[276:]  # in evaluate this is actually sequences. 
         
         
         # =========================================================================
@@ -66,7 +71,11 @@ class Chatbot():
         answer = e.get_answers(q_sequence, self.__relevant_ans, self.__model,"",
                 self.__answer_indexes) 
         #        return self.__text_answers[answer[1]
-        return self.texts1[self.__answer_indexes[answer[1]]]
+        
+        #print( self.texts1[self.__answer_indexes[answer[1]]]) 
+        #print(self.__text_answers[answer[1]]) 
+        return self.__text_answers[self.__answer_indexes[answer[1]]] 
+        #return self.texts1[self.__answer_indexes[answer[1]]]
     
     
     def interactive(self): 

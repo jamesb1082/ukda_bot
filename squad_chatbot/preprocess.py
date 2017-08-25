@@ -82,16 +82,20 @@ def estimate_rows(n):
 
 
 
-def split_dataset(p_split):
-    qa_path = "../data/qa.csv" 
+def split_dataset(p_split, numq):
+    qa_path = "../data/squad/qa.csv" 
     qa_file = open(qa_path,'r') 
-    training_path = "../data/train_correct.csv" 
-    test_path = "../data/test_correct.csv" 
+    training_path = "../data/squad/train_correct.csv" 
+    test_path = "../data/squad/test_correct.csv" 
     correct_ans = []  
-        
-    for line in qa_file: 
+    counter = 0  
+    for line in qa_file:
+        counter+=1 
         entry = line.strip("\n").split(",")
-        correct_ans.append(entry) 
+        correct_ans.append(entry)
+        if counter > numq: #stops it being created on the whole dataset.  
+            break 
+
     qa_file.close()
 
 
@@ -122,12 +126,10 @@ def create_dataset(number = 2):
     """
     dataset = [] 
     correct_ans = [] 
-    qa_path = "../data/train_correct.csv"
-    new_dataset = "../data/new_qa.csv"
+    qa_path = "../data/squad/train_correct.csv"
+    new_dataset = "../data/squad/new_qa.csv"
 
     # for the squad database 
-    qa_path = "../data/squad/qa.csv"
-    new_dataset = "../data/squad/new_qa.csv"
     
     print("Estimated number of rows: ", estimate_rows(number))    
     #read in the right answer questions.
@@ -234,6 +236,4 @@ def create_sqds(number , start ):
         bar.update(count)
     sys.stdout.write("\n")  
         
-
-
 

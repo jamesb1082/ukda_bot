@@ -19,6 +19,7 @@ from keras.callbacks import ModelCheckpoint, TensorBoard
 import pickle 
 from batcher import load_batches,num_per_epoch 
 
+
 def create_base_nn_updated(embedding): 
     """
     Same as the above function, however it is deeper.  
@@ -97,8 +98,8 @@ def load_data():
         if len(i) > value: 
             value = len(i) 
     word_index = tokenizer.word_index 
+    
     data = pad_sequences(sequences, 2300)
-
     with open('tokenizer.p', 'w') as f : 
         pickle.dump(tokenizer, f) 
     labels = []
@@ -231,7 +232,7 @@ if __name__ == '__main__':
     # ==========================================================================
     validation_split = 0.2 
     save_file = 'models/snn.h5'
-    epochs = 5
+    epochs =96
     bs = 64#batch size  
     max_seq_len = 2300
     embedding_dim = 100
@@ -246,6 +247,7 @@ if __name__ == '__main__':
     tokenizer.fit_on_texts(texts) 
     word_index = tokenizer.word_index  
     sequences = tokenizer.texts_to_sequences(texts)  
+    data = pad_sequences(sequences,max_seq_len ) 
     # ========================================================================== 
     # Create a new neural network from scratch. 
     # ==========================================================================
@@ -272,7 +274,7 @@ if __name__ == '__main__':
         
         model.load_weights("models/weights.hdf5")     
         history = model.fit_generator(load_batches(tokenizer,bs), 
-                steps_per_epoch=num_per_epoch(bs),epochs = 5, use_multiprocessing=False)  
+                steps_per_epoch=num_per_epoch(bs),epochs = epochs, use_multiprocessing=False)  
         model.load_weights("models/weights.hdf5")     
  
         save_model= 'models/epochs_' + str(epochs) + '_bs_'  + str(bs) + '.h5'
@@ -293,4 +295,4 @@ if __name__ == '__main__':
     #train_out = model.evaluate([train_data[:,0], train_data[:,1]] , train_labels, batch_size=32) 
     #test_out = model.evaluate([test_data[:,0], test_data[:,1]] , test_labels, batch_size=32)  
     #display_results(train_out, test_out, model)
-    evaluation(sequences, model)  
+    evaluation(data, model)  
