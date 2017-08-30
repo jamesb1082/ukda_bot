@@ -1,4 +1,4 @@
-
+# UKDA Chatbot # 
 ## Getting Started ## 
 This repository contains different attempts to try and create a chatbot, from frameworks, 
 distance functions, and ultimately a siamese neural network (SNN). Quick steps:
@@ -54,10 +54,11 @@ This approach uses a SNN to try and learn a distance function and was the best p
 
 To set up this approach: 
 * Open a python interactive shell in the snn_chatbot directory. 
-* type in "import preprocess as p"
-* Then type "p.create_dataset(N)" where N is the first N questions in your qa.csv files. 
+* type in: ``` import preprocess as p``` 
+* Then: ``` p.create_dataset(N) ```  where N is the first N questions in your qa.csv files. 
 
 The chatbot first needs training, which is done by running train_bot.py inside the snn_chatbot directory.  
+
 #### 3.1 Terminal Application ####
 The chatbot itself can be run inside terminal which is done by running the chatbot.py file inside the snn_chatbot directory. 
 
