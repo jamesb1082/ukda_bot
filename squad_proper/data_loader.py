@@ -73,7 +73,7 @@ def format_data():
         i += 1
         labels.append(label(row[1], row[1])) 
 
-    return arr, labels, tokenizer.word_index #could include tokenizer if needed. 
+    return arr, labels, tokenizer #could include tokenizer if needed. 
 
 
 

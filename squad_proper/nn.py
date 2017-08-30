@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from keras.callbacks import ModelCheckpoint, TensorBoard
 import pickle 
 from data_loader import format_data
-
+from predictions import generate_predictions
 def create_base_nn_updated(embedding): 
     """
     Same as the above function, however it is deeper.  
@@ -176,7 +176,7 @@ if __name__ == '__main__':
     # ==========================================================================
     validation_split = 0.2 
     save_file = 'models/snn.h5'
-    epochs = 10
+    epochs = 5
     bs = 64#batch size  
     max_seq_len = 1000
     embedding_dim = 100 
@@ -185,7 +185,7 @@ if __name__ == '__main__':
     # ==========================================================================
     print("Update: Preprocessing data") 
     
-    train_data, train_labels, word_index = format_data()  
+    train_data, train_labels, tokenizer = format_data()  
 
     # ========================================================================== 
     # Create a new neural network from scratch. 
@@ -196,7 +196,7 @@ if __name__ == '__main__':
         # Creating the inputs # what does this line actually do? check mnist script 
         adam = Adam(lr=0.001) 
         
-        model = build_model(word_index) 
+        model = build_model(tokenizer.word_index) 
         # compile and fit
         model.compile(loss=contrastive_loss, optimizer=adam, metrics=['accuracy']) 
         
@@ -222,4 +222,8 @@ if __name__ == '__main__':
         print("Loading Model") 
         model = load_model(args.load, custom_objects={'contrastive_loss':contrastive_loss}) 
         #history = model.fit([train_data[:,0], train_data[:,1]], train_labels,
-        #        batch_size=32, epochs=0, validation_split=0.2)     
+        #        batch_size=32, epochs=0, validation_split=0.2)    
+
+
+
+    generate_predictions(model, tokenizer) 
