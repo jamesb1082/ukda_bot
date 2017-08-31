@@ -5,7 +5,7 @@ from keras.preprocessing.sequence import pad_sequences
 import numpy as np
 
 
-def get_data():
+def get_data(use_select=True):
     """
     Loads the data from json, however, it then has to be put into numpy matrix
     and generate the test label answers. Do this for if answer is in chunk.  
@@ -25,10 +25,12 @@ def get_data():
         data = json.load(f)['data'] 
     for context in contexts: 
         for entry in data: 
-            if entry["title"] == context: 
+            if entry["title"] == context and use_select == True: 
                 context_lists.append(entry["paragraphs"])
                 break # used to exit forloop. Could change to while loop later
-    
+            elif use_select == False: 
+                context_lists.append(entry["paragraphs"])
+
     for context in context_lists: 
         for row in context: 
             qas = row["qas"] 
@@ -43,14 +45,23 @@ def get_data():
     return entries
 
 def label(chunk,answers): 
+    """
+    Takes a list of answers, and a chunk. 
+
+    Labels the data 0 if it's correct, 1 if not. 
+    """
     for ans in answers: 
         if ans in chunk:
             return 0 
     return 1 
 
-def format_data(): 
+def format_data():
+    """
+    Takes the data from get_data(), trains a tokenizer and then 
+    converts it into a numpy array of sequences. It also labels the data. 
+    """
     max_len = 1000 
-    data = get_data()  
+    data = get_data(False)  
     labels = [] 
     arr = np.zeros((len(data), 2,max_len)) 
     tokenizer = Tokenizer(num_words=10000,
@@ -73,7 +84,7 @@ def format_data():
         i += 1
         labels.append(label(row[1], row[1])) 
 
-    return arr, labels, tokenizer #could include tokenizer if needed. 
+    return arr, labels, tokenizer 
 
 
 

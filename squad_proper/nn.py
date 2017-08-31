@@ -176,8 +176,8 @@ if __name__ == '__main__':
     # ==========================================================================
     validation_split = 0.2 
     save_file = 'models/snn.h5'
-    epochs = 5
-    bs = 64#batch size  
+    epochs = 25  
+    bs = 256#batch size  
     max_seq_len = 1000
     embedding_dim = 100 
     # ==========================================================================
