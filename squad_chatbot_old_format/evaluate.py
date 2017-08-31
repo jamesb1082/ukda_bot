@@ -100,8 +100,8 @@ def evaluation(sequences, model):
     """
     print()
     print("=======================EVALUATION=====================") 
-    links = get_file_links("../data/squad/test_correct.csv")
-    texts = get_raw_strings() 
+    links = get_file_links("../data/squad/test_qa_pairs.csv")
+    texts = get_raw_strings(True) 
     index_links, corr_in_links = generate_index(links, texts)  
     
     numq = len(SquadManager().get_questions() )  

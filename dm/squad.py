@@ -29,18 +29,21 @@ class SquadManager():
                     questions.append(qa['question']) 
                     for a in qa['answers']:
                         answers.append(a['text'])
+                        pairs.append((len(questions)-1, len(answers)-1)) 
         self.__questions = questions 
         self.__answers = answers 
         # Just checks that the qa pairs is the same length as the answers.  
-
-
+       
+        f = open("../data/squad/test_qa_pairs.csv", 'w')
+        for p in pairs: 
+            f.write(str(p[0])+"," + str(p[1])+",0\n") 
+        f.close() 
     def print_facts(self): 
-        print(len(questions))
-        print(len(answers))
-        
-        print(len(questions)/len(answers))
+        print(len(self.__questions))
+        print(len(self.__answers))
+        print(len(self.__questions)/len(self.__answers))
         #print(qa['answers']) 
-
+    
 
     def get_question(self, index):
 
@@ -59,5 +62,5 @@ class SquadManager():
         return self.__answers
 
 if __name__ == '__main__': 
-    dms = SquadManager("train-v1.1")
+    dms = SquadManager("dev-v1.1")
  

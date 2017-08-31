@@ -50,15 +50,18 @@ def get_data():
     return index_links, texts
 
 
-def get_raw_strings(): 
+def get_raw_strings(dev_set = False): 
     """
     Loads all the strings in the dataset.
 
     Returns a list of strings
     """
-    texts = [] 
-    dmsquad = SquadManager() 
+    texts = []
 
+    if dev_set == True: 
+        dmsquad = SquadManager("dev-v1.1") 
+    else: 
+        dmsquad= SquadManager() 
     for  item in dmsquad.get_questions():
         texts.append(unidecode(item))  
     
